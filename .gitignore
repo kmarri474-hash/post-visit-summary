@@ -24,6 +24,10 @@ pvs.db
 build/
 *.egg
 
+# Screenshot generator intermediates
+scripts/screenshots/db_preview.html
+scripts/screenshots/package-lock.json
+
 # Editor / IDE scratch
 .scratch/
 .idea/

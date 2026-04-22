@@ -4,6 +4,43 @@ Multi-agent system that turns an encounter (audio or text + structured fields) i
 
 > **Running it locally?** See [`LOCAL_SETUP.md`](./LOCAL_SETUP.md) for a copy-pasteable end-to-end walkthrough (Postgres via Podman, backend venv, frontend dev server, snapshot load, smoke test, troubleshooting).
 
+## Screenshots
+
+### Frontend — home page (`http://localhost:5173`)
+
+Seeded encounters, a "Drafts in review" list with per-artifact sign-off progress,
+and a separate "Signed off" bucket. Upload audio or paste a transcript and hit
+**Run agents** to drive the full LangGraph pipeline.
+
+![Frontend home page](docs/screenshots/frontend-home.png)
+
+### Backend — interactive API docs (`http://localhost:8000/docs`)
+
+FastAPI auto-generated OpenAPI docs for all endpoints: encounters, artifacts
+(patch / signoff), audit trail, transcription.
+
+![Backend API docs](docs/screenshots/backend-api-docs.png)
+
+### Database — live Postgres state
+
+Rendered from `psql` against the running Postgres container. Shows row counts,
+recent encounters, and per-encounter artifact sign-off progress
+(✓ = artifact signed off).
+
+![Database preview](docs/screenshots/database.png)
+
+Regenerate these at any time (requires the stack to be running):
+
+```bash
+cd scripts/screenshots
+npm install                     # first time only
+npx playwright install chromium # first time only
+./build_db_html.sh              # refresh the DB HTML preview
+node capture.js                 # re-shoot all three PNGs into docs/screenshots/
+```
+
+See `scripts/screenshots/README.md` for details.
+
 ## Stack
 
 - **Backend**: FastAPI, LangGraph, Azure OpenAI via UHG **UAIS** (OAuth2 client-credentials → bearer token used as `azure_ad_token`, with `projectId` header), SQLAlchemy (async), Postgres

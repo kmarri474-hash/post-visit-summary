@@ -1,0 +1,12 @@
+{
+  "name": "pvs-screenshots",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Regenerate README screenshots with Playwright.",
+  "scripts": {
+    "capture": "node capture.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.59.1"
+  }
+}
