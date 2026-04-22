@@ -77,6 +77,22 @@ UAIS_DEPLOYMENT=gpt-5.2_2025-12-11   # or whichever deployment you have
 UAIS_PROJECT_ID=...
 ```
 
+**Azure Cognitive Services Speech** (required for audio upload and live mic transcription):
+
+Obtain from your Azure app registration and Speech resource in the Azure Portal:
+
+```
+AZURE_SPEECH_CLIENT_ID=<app-registration-client-id>
+AZURE_SPEECH_CLIENT_SECRET=<app-registration-secret>
+AZURE_SPEECH_TENANT_ID=<directory-tenant-id>
+AZURE_SPEECH_RESOURCE_ID=<ARM resource ID — Speech resource → Properties in Azure Portal>
+AZURE_SPEECH_REGION=eastus
+# AZURE_SPEECH_ENDPOINT=   # optional, only for custom / private endpoints
+```
+
+> If these are not set, transcription falls back to UAIS Whisper (if configured) or
+> local faster-whisper. You can always paste a transcript manually.
+
 Postgres credentials default to a local-only container and do **not**
 need to be changed:
 
@@ -134,6 +150,10 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
 pip install -e .
+# Azure Speech transcription (recommended — enables file upload + live mic)
+pip install -e ".[azure-speech]"
+# Optional: local Whisper fallback (large model download, CPU)
+# pip install -e ".[local-whisper]"
 # Optional: dev tools (pytest, ruff)
 pip install -e ".[dev]"
 cd ..
@@ -310,6 +330,10 @@ scripts/stop_postgres_podman.sh
 |-----------------------------------------------------------------|--------------------------------------------------------|-----------------------------------------------------------------------------------------|
 | `connection refused` on port 55432                              | Postgres container not running                         | `scripts/start_postgres_podman.sh`                                                      |
 | Backend boots but `azure_configured: false`                     | Missing `UAIS_*` / `HCP_*` values in `.env`            | Re-check `.env` and restart backend                                                     |
+| Audio upload returns 503                                        | `AZURE_SPEECH_*` not set                               | Add Speech env vars to `.env`; or paste a transcript from `test-data/transcripts/`      |
+| Audio upload takes ~2 minutes                                   | Expected — SDK processes at real-time speed            | Use live mic for immediate results instead                                               |
+| Live listening button does nothing / shows error                | Speech token fetch failed                              | Check `AZURE_SPEECH_*` in `.env`; check backend logs for credential errors              |
+| Live listening shows "canceled" immediately                     | AAD app missing Speech role                            | Assign **Cognitive Services Speech Contributor** on the Speech resource to your app reg  |
 | Home page "Signed off" empty even though you signed 5 artifacts | Browser still has cached list                          | Refresh the page; if still empty check `/api/encounters` JSON for `artifacts_signed`    |
 | Home page shows old data after backend restart                  | Browser cache                                          | Hard refresh (`Cmd+Shift+R`)                                                            |
 | `CORS error` in the browser console                             | `API_CORS_ORIGINS` does not include the UI origin      | Add `http://localhost:5173` to `API_CORS_ORIGINS` in `.env`, restart backend            |
@@ -345,6 +369,7 @@ bind-mount `backend/app/data/snapshot.json` — which the provided
 ## 12. Who to ask
 
 - **UAIS / Azure credentials**: team slack channel.
+- **Azure Speech credentials**: Azure Portal → app registration (client ID/secret/tenant) + Speech resource (resource ID/region).
 - **Project architecture**: `README.md` and
   `../.windsurf/plans/post-visit-summary-agent-*.md`.
 - **Bugs or feature requests**: open a GitHub issue or ping the author
