@@ -3,6 +3,8 @@
 Multi-agent system that turns an encounter (audio or text + structured fields) into a clinical note draft, a PCP handoff summary, and coding artifacts (ICD-10, CPT, E/M, HCC) — all persisted as drafts with a full audit trail until a clinician signs off.
 
 > **Running it locally?** See [`LOCAL_SETUP.md`](./LOCAL_SETUP.md) for a copy-pasteable end-to-end walkthrough (Postgres via Podman, backend venv, frontend dev server, snapshot load, smoke test, troubleshooting).
+>
+> **Curious how it's built?** See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the system diagram, LangGraph agent topology, data model ERD, and sequence diagrams for the create/run/review/signoff flows.
 
 ## Screenshots
 
