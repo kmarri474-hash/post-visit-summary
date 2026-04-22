@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import {
@@ -6,11 +6,13 @@ import {
   Play,
   FileText,
   Mic,
+  MicOff,
   FolderOpen,
   CheckCircle2,
   Sparkles,
   Activity,
   Stethoscope,
+  Radio,
 } from "lucide-react";
 
 type Sample = {
@@ -100,6 +102,89 @@ export default function EncounterIntake() {
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // ── Ambient live listening ────────────────────────────────────────────────
+  const [listening, setListening] = useState(false);
+  const [listenErr, setListenErr] = useState<string | null>(null);
+  const [interimText, setInterimText] = useState("");
+  const recognizerRef = useRef<any>(null);
+
+  async function startListening() {
+    setListenErr(null);
+    setInterimText("");
+    try {
+      const { token, region, endpoint } = await api.getSpeechToken();
+
+      // Dynamically import the Azure Speech JS SDK (loaded from npm)
+      const sdk = await import("microsoft-cognitiveservices-speech-sdk");
+
+      let speechConfig: any;
+      if (endpoint) {
+        speechConfig = sdk.SpeechConfig.fromEndpoint(new URL(endpoint));
+        speechConfig.authorizationToken = token;
+      } else {
+        speechConfig = sdk.SpeechConfig.fromAuthorizationToken(token, region!);
+      }
+      speechConfig.speechRecognitionLanguage = "en-US";
+
+      const audioConfig = sdk.AudioConfig.fromDefaultMicrophoneInput();
+      const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
+      recognizerRef.current = recognizer;
+
+      // Real-time interim results
+      recognizer.recognizing = (_s: any, e: any) => {
+        if (e.result.reason === sdk.ResultReason.RecognizingSpeech) {
+          setInterimText(e.result.text);
+        }
+      };
+
+      // Final recognized sentence → append to transcript
+      recognizer.recognized = (_s: any, e: any) => {
+        if (e.result.reason === sdk.ResultReason.RecognizedSpeech) {
+          const text = e.result.text.trim();
+          if (text) {
+            setTranscript((prev) => (prev ? prev + " " + text : text));
+          }
+          setInterimText("");
+        }
+      };
+
+      recognizer.canceled = (_s: any, e: any) => {
+        setListenErr(`Listening canceled: ${e.errorDetails || e.reason}`);
+        setListening(false);
+        setInterimText("");
+      };
+
+      recognizer.startContinuousRecognitionAsync(
+        () => setListening(true),
+        (err: any) => {
+          setListenErr(`Could not start microphone: ${err}`);
+          setListening(false);
+        },
+      );
+    } catch (e: any) {
+      setListenErr(
+        e?.message?.includes("503") || e?.message?.includes("not configured")
+          ? "Azure Speech is not configured on the server. Add AZURE_SPEECH_* vars to your .env."
+          : `Live transcription unavailable: ${e.message || e}`,
+      );
+    }
+  }
+
+  function stopListening() {
+    const r = recognizerRef.current;
+    if (r) {
+      r.stopContinuousRecognitionAsync(
+        () => { setListening(false); setInterimText(""); recognizerRef.current = null; },
+        () => { setListening(false); setInterimText(""); recognizerRef.current = null; },
+      );
+    }
+  }
+
+  useEffect(() => {
+    return () => { if (recognizerRef.current) recognizerRef.current.stopContinuousRecognitionAsync(() => {}, () => {}); };
+  }, []);
+  // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     api.listSamples().then(setSamples).catch(() => {});
@@ -316,14 +401,52 @@ export default function EncounterIntake() {
           </span>
         </div>
 
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          {/* Upload audio */}
           <label className="btn btn-outline cursor-pointer">
             <Upload className="w-4 h-4" />
-            <span>{uploading ? "Transcribing…" : "Upload audio (auto-transcribe)"}</span>
-            <input type="file" accept="audio/*" className="hidden" onChange={handleAudio} />
+            <span>{uploading ? "Transcribing…" : "Upload audio"}</span>
+            <input type="file" accept="audio/*" className="hidden" onChange={handleAudio} disabled={uploading || listening} />
           </label>
+
+          {/* Live / ambient microphone */}
+          {!listening ? (
+            <button
+              type="button"
+              className="btn btn-outline flex items-center gap-2"
+              onClick={startListening}
+              disabled={uploading || busy}
+              title="Start ambient voice transcription"
+            >
+              <Radio className="w-4 h-4 text-rose-500" />
+              <span>Start live transcript</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-outline flex items-center gap-2 border-rose-400 text-rose-600 animate-pulse"
+              onClick={stopListening}
+              title="Stop listening"
+            >
+              <MicOff className="w-4 h-4" />
+              <span>Stop listening</span>
+            </button>
+          )}
+
           <span className="text-xs text-slate-500">or paste a transcript below</span>
         </div>
+
+        {/* Interim live caption */}
+        {(listening || interimText) && (
+          <div className="mb-2 flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            <Mic className="w-3.5 h-3.5 shrink-0 animate-pulse" />
+            <span className="italic">{interimText || "Listening…"}</span>
+          </div>
+        )}
+
+        {listenErr && (
+          <div className="mb-2 rounded bg-amber-50 px-3 py-2 text-sm text-amber-700">{listenErr}</div>
+        )}
 
         <label className="label">Transcript</label>
         <textarea

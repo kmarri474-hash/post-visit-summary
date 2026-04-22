@@ -52,6 +52,9 @@ export const api = {
     fd.append("file", file);
     const res = await fetch(`${API_BASE}/api/transcribe`, { method: "POST", body: fd });
     if (!res.ok) throw new Error(await res.text());
-    return (await res.json()) as { text: string };
+    return (await res.json()) as { text: string; source?: string };
   },
+
+  getSpeechToken: () =>
+    request<{ token: string; region: string | null; endpoint: string | null }>("/api/speech/token"),
 };
