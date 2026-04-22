@@ -1,0 +1,67 @@
+Dr. Thompson: Ms. Aldridge, nice to see you. How have the headaches been?
+
+Patient: Worse, honestly. That's why I'm here. I'm getting three a month now, and the last two, I had vision changes I've never had before.
+
+Dr. Thompson: Tell me about the vision changes.
+
+Patient: About twenty minutes before the headache starts, I see these shimmering zigzag lines on the right side of my vision. Almost like a C-shape that slowly gets bigger. It lasts maybe fifteen or twenty minutes, then it fades and the headache comes on.
+
+Dr. Thompson: Anything else? Any numbness, weakness, speech changes?
+
+Patient: The last time, my right hand felt tingly for about ten minutes. Just the fingertips. No weakness. No trouble speaking.
+
+Dr. Thompson: And the headache itself — describe it.
+
+Patient: One-sided, usually right side, throbbing. Eight or nine out of ten. Light hurts my eyes, sound hurts, and I feel nauseated. I usually throw up once and feel a little better. It lasts anywhere from eight to twenty-four hours if I don't take anything.
+
+Dr. Thompson: What do you take?
+
+Patient: I have sumatriptan fifty milligrams. It helps about sixty percent of the time, if I catch it early. When it doesn't work I take naproxen and lie in a dark room.
+
+Dr. Thompson: Any triggers you've noticed?
+
+Patient: Red wine. Poor sleep. Sometimes my period. Skipping meals. Screen time when I'm tired.
+
+Dr. Thompson: How many days a month do you have any kind of headache — migraine or tension?
+
+Patient: Probably eight to ten days a month total. Three of those are the bad migraines.
+
+Dr. Thompson: How often do you take sumatriptan?
+
+Patient: Three or four days a month.
+
+Dr. Thompson: Any over-the-counter pain meds in addition?
+
+Patient: Naproxen maybe twice a week.
+
+Dr. Thompson: You're right at the edge of what we'd call medication-overuse risk, so we want to watch that. Any history of stroke, TIA, heart disease, blood clots?
+
+Patient: No.
+
+Dr. Thompson: Any history of depression, anxiety, or other mood issues?
+
+Patient: A little anxiety. Not on medication.
+
+Dr. Thompson: Blood pressure?
+
+Patient: Usually one-twenty over eighty.
+
+Dr. Thompson: And you're — remind me — thirty-four?
+
+Patient: Thirty-four.
+
+Dr. Thompson: Not pregnant, not planning to be in the next few months?
+
+Patient: Correct. I have an IUD.
+
+Dr. Thompson: And you don't smoke?
+
+Patient: Never.
+
+Dr. Thompson: Good. Your exam is normal — no focal neurological findings, fundoscopy is clear, no neck tenderness, temporal arteries non-tender. Let me go over what I think is happening and what we should do. You're describing classic migraine with typical aura — visual scintillations preceding a unilateral throbbing headache with photophobia, phonophobia, and nausea. The sensory aura in your hand adds a somatosensory component but is still consistent with migraine. Your three-per-month attacks and eight-to-ten total headache days put you in the "episodic migraine" category with clear indication for preventive therapy. My plan is four parts. One: prevention. I'm starting you on topiramate twenty-five milligrams at bedtime for one week, then fifty at bedtime, and we'll target seventy-five to a hundred milligrams daily if tolerated. It takes six to eight weeks for full effect. Side effects to know about: tingling in your hands or feet, change in taste especially with carbonated drinks, some word-finding difficulty, weight loss. Avoid pregnancy on it — use reliable contraception, which you already have. If topiramate doesn't work or you can't tolerate it, we'll try a CGRP antagonist — those are the monthly injectables — but insurance usually requires trying topiramate or propranolol first. Two: rescue. Continue sumatriptan fifty for acute attacks, but I'm also going to add naproxen as a co-medication — some studies show combining a triptan with an NSAID improves response. Take them together at the first sign of aura. I'd like to limit your triptan days to no more than eight per month and all acute meds combined to no more than ten days. Three: lifestyle — and I know you've heard this before. Consistent sleep schedule, hydration, don't skip meals, consider cutting red wine for eight weeks to see if it helps. I'll give you a headache diary app to track attacks and triggers. Four: red flags — if you get a headache that is truly the worst of your life, sudden onset, associated with fever, neck stiffness, weakness, confusion, or speech problems, go to the ER immediately. These wouldn't be migraines. Given your first-time sensory aura, I want to get a brain MRI without contrast — not because I expect to find anything, but to confirm a normal structural exam before we commit to long-term preventive therapy. Follow-up in six weeks to assess topiramate response. If we're not at fifty percent reduction by then, we'll escalate.
+
+Patient: Will topiramate affect my birth control?
+
+Dr. Thompson: Below two hundred milligrams daily, no. Above that it can, and we're staying below.
+
+Patient: Okay. Thank you.

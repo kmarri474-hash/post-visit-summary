@@ -1,0 +1,14 @@
+[
+  {"code": "E11.9", "description": "Type 2 diabetes mellitus without complications", "hcc": "HCC 19"},
+  {"code": "E11.65", "description": "Type 2 diabetes mellitus with hyperglycemia", "hcc": "HCC 18"},
+  {"code": "E11.22", "description": "Type 2 diabetes mellitus with diabetic chronic kidney disease", "hcc": "HCC 18"},
+  {"code": "I10",    "description": "Essential (primary) hypertension", "hcc": null},
+  {"code": "I50.22", "description": "Chronic systolic (congestive) heart failure", "hcc": "HCC 85"},
+  {"code": "I50.32", "description": "Chronic diastolic (congestive) heart failure", "hcc": "HCC 85"},
+  {"code": "I50.9",  "description": "Heart failure, unspecified", "hcc": "HCC 85"},
+  {"code": "J44.1",  "description": "COPD with (acute) exacerbation", "hcc": "HCC 111"},
+  {"code": "N18.3",  "description": "Chronic kidney disease, stage 3", "hcc": "HCC 138"},
+  {"code": "E78.5",  "description": "Hyperlipidemia, unspecified", "hcc": null},
+  {"code": "F32.9",  "description": "Major depressive disorder, single episode, unspecified", "hcc": "HCC 59"},
+  {"code": "Z79.4",  "description": "Long term (current) use of insulin", "hcc": null}
+]

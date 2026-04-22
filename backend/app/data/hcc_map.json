@@ -1,0 +1,11 @@
+{
+  "E11.22": {"hcc": "HCC 18", "description": "Diabetes with chronic complications"},
+  "E11.65": {"hcc": "HCC 18", "description": "Diabetes with chronic complications"},
+  "E11.9":  {"hcc": "HCC 19", "description": "Diabetes without complication"},
+  "I50.22": {"hcc": "HCC 85", "description": "Congestive heart failure"},
+  "I50.32": {"hcc": "HCC 85", "description": "Congestive heart failure"},
+  "I50.9":  {"hcc": "HCC 85", "description": "Congestive heart failure"},
+  "J44.1":  {"hcc": "HCC 111", "description": "Chronic obstructive pulmonary disease"},
+  "N18.3":  {"hcc": "HCC 138", "description": "Chronic kidney disease, moderate (stage 3)"},
+  "F32.9":  {"hcc": "HCC 59", "description": "Major depressive, bipolar, and paranoid disorders"}
+}

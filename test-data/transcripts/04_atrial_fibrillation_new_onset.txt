@@ -1,0 +1,61 @@
+Dr. Okafor: Mr. Haldane, I'm Dr. Okafor. Cardiology was paged because the ED EKG shows atrial fibrillation. Tell me what brought you in today.
+
+Patient: I was in my woodshop about four hours ago and started feeling my heart pounding. Not painful, just — fluttering, really fast. I sat down and it kept going. My wife took my pulse and said it felt irregular, so she drove me in.
+
+Dr. Okafor: Have you ever had palpitations like this before?
+
+Patient: Now that you mention it, a couple of times in the last few months. Usually only for a minute or two and then it passes. I figured it was too much coffee.
+
+Dr. Okafor: Any shortness of breath, chest pain, dizziness, or lightheadedness?
+
+Patient: A little short of breath. No chest pain. I felt a bit lightheaded once when I first stood up, but it passed.
+
+Dr. Okafor: Any fainting?
+
+Patient: No.
+
+Dr. Okafor: Have you had any recent alcohol, energy drinks, or stimulants?
+
+Patient: I had two beers last night — more than usual. And a big coffee this morning.
+
+Dr. Okafor: Any recent illness or fever?
+
+Patient: No.
+
+Dr. Okafor: Past medical history — what do you have?
+
+Patient: High blood pressure for about fifteen years, controlled on lisinopril twenty milligrams and amlodipine five. Type two diabetes, diagnosed four years ago, on metformin a thousand twice a day, last A1c was seven-point-one. High cholesterol, I take atorvastatin twenty. Mild sleep apnea, I use a CPAP most nights.
+
+Dr. Okafor: Any prior stroke or bleeding?
+
+Patient: No stroke. I had a nosebleed that went to the ER a couple of years ago but it was mechanical — I bumped my nose.
+
+Dr. Okafor: Family history of heart disease or arrhythmia?
+
+Patient: My dad had atrial fibrillation in his late sixties. No sudden cardiac death in the family.
+
+Dr. Okafor: How old are you now?
+
+Patient: Sixty-nine.
+
+Dr. Okafor: Thank you. Let me examine you. Blood pressure is one-forty-four over ninety-two, heart rate one-twenty-eight and irregularly irregular, oxygen ninety-six percent on room air, afebrile. Heart sounds irregular without murmur. Lungs clear. No jugular venous distension. No peripheral edema. The rhythm strip confirms atrial fibrillation with rapid ventricular response. Troponin is negative. TSH is pending. BMP is normal except for glucose of one-forty-two. BNP is mildly elevated at two-twenty. Chest X-ray is clear without pulmonary edema.
+
+Patient: So what's the plan?
+
+Dr. Okafor: Two decisions. First, rate or rhythm control. Since you've likely been in atrial fibrillation for less than forty-eight hours based on your symptoms, we have options. I'm going to start with rate control — IV metoprolol now to bring your heart rate below one-ten. If that doesn't hold, we can discuss a cardioversion. Second, anticoagulation to prevent stroke. Your CHA2DS2-VASc score is four: one for age sixty-five to seventy-four, one for hypertension, one for diabetes, and one for sex is actually zero because you're male — so let me recount. Age sixty-five to seventy-four is one. Hypertension one. Diabetes one. Total three. That translates to about a three percent annual stroke risk without anticoagulation, which justifies starting a blood thinner.
+
+Patient: A blood thinner for life?
+
+Dr. Okafor: For now, indefinitely, unless the rhythm converts to sinus and stays that way — and even then, current guidelines recommend continuing anticoagulation given your risk factors. I'm recommending apixaban, five milligrams twice daily. It's a direct oral anticoagulant, no routine blood tests required, lower bleeding risk than warfarin. Take it with food. Biggest caution: if you cut yourself, prolonged pressure — fifteen minutes minimum. No NSAIDs, so no ibuprofen or naproxen. Acetaminophen is fine.
+
+Patient: What about my aspirin — I take a baby aspirin?
+
+Dr. Okafor: Stop it. Aspirin plus apixaban significantly increases bleeding risk without much stroke-prevention benefit in atrial fibrillation. If we find out later that you have coronary artery disease, we'll revisit.
+
+Patient: Can I still work in my woodshop?
+
+Dr. Okafor: Yes, just be careful with power tools and anything sharp. Wear eye protection. And I want you to invest in a good pulse oximeter with heart rate — check it once a day. We'll also order a transthoracic echocardiogram this week to look at your heart structure and function, a thyroid panel to rule out hyperthyroidism as a trigger, and set you up with a Holter monitor after discharge. And I want to see you in my cardiology clinic in two weeks.
+
+Patient: What if this happens again?
+
+Dr. Okafor: If you feel palpitations lasting more than thirty minutes with shortness of breath, chest pain, or lightheadedness, come back. If you're at home and feel fine with palpitations, take your pulse, note the time, and give us a call.

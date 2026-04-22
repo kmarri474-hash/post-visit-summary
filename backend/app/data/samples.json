@@ -1,0 +1,55 @@
+[
+  {
+    "id": "sample-dm2-htn",
+    "label": "DM2 + HTN follow-up",
+    "patient_ref": "PT-SAMPLE-DM2",
+    "clinician_ref": "DR-LEE",
+    "source_type": "sample",
+    "transcript": "Dr. Lee: Good to see you again, Mr. Alvarez. How have you been since your last visit?\nPatient: Honestly, my sugars have been running high in the mornings, 180 to 210. I've been thirsty a lot and getting up at night to urinate.\nDr. Lee: Are you taking metformin 1000 mg twice a day as prescribed?\nPatient: Yes, every day. I did miss lisinopril a couple of times last week.\nDr. Lee: Your blood pressure today is 148 over 92, heart rate 84. A1c from last week came back at 8.9%. Weight is up three pounds. Let's start you on empagliflozin 10 mg daily and increase lisinopril to 20 mg daily. I also want a basic metabolic panel and a urine microalbumin today. Please follow up in 6 weeks and we'll recheck A1c in 3 months. Let's also refer you to nutrition for a diabetes diet review.\nPatient: Okay, sounds good.",
+    "structured_input": {
+      "chief_complaint": "Elevated home glucose readings and nocturia",
+      "vitals": {"bp": "148/92", "hr": 84, "temp_f": 98.4, "weight_lb": 202},
+      "medications": [
+        {"name": "metformin", "dose": "1000 mg", "frequency": "BID", "status": "active"},
+        {"name": "lisinopril", "dose": "10 mg", "frequency": "daily", "status": "changed"},
+        {"name": "empagliflozin", "dose": "10 mg", "frequency": "daily", "status": "new"}
+      ],
+      "diagnoses": [
+        {"description": "Type 2 diabetes mellitus with hyperglycemia", "icd10": "E11.65"},
+        {"description": "Essential hypertension", "icd10": "I10"}
+      ],
+      "assessments": ["Uncontrolled T2DM, A1c 8.9%", "Hypertension, suboptimally controlled"],
+      "care_plan_changes": ["Start empagliflozin 10 mg daily", "Increase lisinopril to 20 mg daily"],
+      "referrals": ["Nutrition: diabetes diet review"],
+      "orders": ["Basic metabolic panel", "Urine microalbumin", "Repeat A1c in 3 months"],
+      "followup": "Return in 6 weeks"
+    }
+  },
+  {
+    "id": "sample-chf",
+    "label": "CHF exacerbation follow-up",
+    "patient_ref": "PT-SAMPLE-CHF",
+    "clinician_ref": "DR-PATEL",
+    "source_type": "sample",
+    "transcript": "Dr. Patel: Mrs. Chen, you were hospitalized last week for heart failure. How are you breathing today?\nPatient: Still short of breath climbing stairs, and my ankles are swollen by evening. I gained four pounds since discharge.\nDr. Patel: Blood pressure 128/78, heart rate 96, oxygen 94% on room air. Lungs with bibasilar crackles, 2+ pitting edema. Your BNP was 820 at discharge. I'm going to increase torsemide from 20 to 40 mg daily and add spironolactone 25 mg daily. Continue carvedilol and sacubitril-valsartan. Please do daily weights and call if you gain more than 2 pounds in a day. I'll order a BMP and an echocardiogram, and refer you to the heart failure clinic. Follow up with me in 2 weeks.\nPatient: Understood, thank you.",
+    "structured_input": {
+      "chief_complaint": "Dyspnea on exertion and lower extremity edema post-CHF admission",
+      "vitals": {"bp": "128/78", "hr": 96, "spo2": 94, "weight_lb": 168},
+      "medications": [
+        {"name": "torsemide", "dose": "40 mg", "frequency": "daily", "status": "changed"},
+        {"name": "spironolactone", "dose": "25 mg", "frequency": "daily", "status": "new"},
+        {"name": "carvedilol", "dose": "12.5 mg", "frequency": "BID", "status": "active"},
+        {"name": "sacubitril-valsartan", "dose": "49/51 mg", "frequency": "BID", "status": "active"}
+      ],
+      "diagnoses": [
+        {"description": "Chronic systolic congestive heart failure", "icd10": "I50.22"},
+        {"description": "Chronic kidney disease stage 3", "icd10": "N18.3"}
+      ],
+      "assessments": ["Volume overload post-discharge", "HFrEF on GDMT"],
+      "care_plan_changes": ["Torsemide 20->40 mg daily", "Add spironolactone 25 mg daily"],
+      "referrals": ["Heart failure clinic"],
+      "orders": ["BMP", "Echocardiogram", "Daily weights"],
+      "followup": "Return in 2 weeks"
+    }
+  }
+]

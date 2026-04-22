@@ -1,0 +1,49 @@
+Dr. Kwon: Mr. Novak, I'm Dr. Kwon, the on-call physician. I understand you came to the ER with chest pain. Walk me through what happened.
+
+Patient: I was carrying groceries up to my apartment, third floor, and halfway up I got this squeezing feeling in the middle of my chest. Like somebody was sitting on me. I had to stop on the landing. It lasted maybe ten minutes and then it eased up. That was about three hours ago.
+
+Dr. Kwon: Did it radiate anywhere — your arm, your jaw, your back?
+
+Patient: Yeah, actually — my left shoulder and down the inside of my left arm. And I felt a little nauseated. I didn't throw up.
+
+Dr. Kwon: Any sweating?
+
+Patient: My shirt was damp when I sat down, yeah. But it's been warm out.
+
+Dr. Kwon: Short of breath?
+
+Patient: I was huffing and puffing, but I figured that was from the stairs. Once I sat down for a few minutes I felt okay again.
+
+Dr. Kwon: Have you ever had anything like this before?
+
+Patient: Couple of weeks ago, walking the dog, I had a tightness for maybe a minute or two. I figured it was heartburn. It went away when I stopped.
+
+Dr. Kwon: How about at rest — any episodes sitting still?
+
+Patient: No. Always when I'm exerting myself.
+
+Dr. Kwon: Any history of heart disease in the family?
+
+Patient: My dad had a bypass at fifty-eight. He's seventy-nine now. My older brother had a stent put in last year.
+
+Dr. Kwon: And you yourself — any high blood pressure, cholesterol, diabetes?
+
+Patient: Blood pressure runs a little high, around one-forty over ninety at home. My cholesterol was high last time I checked, but that was maybe two years ago. I don't have diabetes. I smoke — half a pack a day, have for twenty-five years.
+
+Dr. Kwon: Age fifty-six?
+
+Patient: Fifty-six, yes.
+
+Dr. Kwon: Okay. Let me examine you. Your vitals — blood pressure one-fifty-two over ninety-four, heart rate eighty-two, oxygen ninety-seven percent on room air, temperature normal. Heart sounds are regular, no murmurs, no rubs, no gallops. Lungs are clear. Abdomen soft. Calves are symmetric. Distal pulses are two-plus and equal. The EKG the nurse ran on arrival shows normal sinus rhythm at eighty, no acute ST changes, no T-wave inversions. But there are some non-specific flattened T waves in the lateral leads that I'd want to compare to an old one if we have one. First troponin drawn forty-five minutes ago came back at point-oh-two, which is right at the upper limit of normal. I've ordered a repeat at three and six hours.
+
+Patient: Is that a heart attack?
+
+Dr. Kwon: Here's my concern. Your story — exertional chest pressure, radiation to the left arm, nausea, diaphoresis, and a prior episode two weeks ago — that's classic for angina. With your age, male sex, active smoking, hypertension, likely hyperlipidemia, and a strong family history of premature coronary disease, your HEART score is seven points, which is high risk. A single troponin right at the cutoff doesn't rule you out — it can take six hours or more to rise. I want to admit you to our chest pain observation unit. We'll trend your troponins, continue telemetry, and I'm going to call cardiology. They'll likely want a stress test or coronary CT angiogram tomorrow morning, and if anything looks concerning, a cardiac catheterization.
+
+Patient: Am I going to die?
+
+Dr. Kwon: You are in the right place and we are going to watch you closely. In the meantime I'm giving you aspirin three-hundred-twenty-five milligrams to chew now, and starting atorvastatin eighty milligrams tonight. We'll hold off on anticoagulation or further anti-ischemic medication until we see how the troponins trend. I want you to call us immediately if the pain returns. Smoking stops today — we'll put you on a nicotine patch.
+
+Patient: Okay. My wife is on her way.
+
+Dr. Kwon: I'll speak with her when she gets here and go through everything. For now, rest, and I'll be back in a few hours with your next troponin result.

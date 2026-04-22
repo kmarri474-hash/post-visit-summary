@@ -1,0 +1,13 @@
+[
+  {"code": "99212", "description": "Office/outpatient visit, established patient, straightforward"},
+  {"code": "99213", "description": "Office/outpatient visit, established patient, low complexity"},
+  {"code": "99214", "description": "Office/outpatient visit, established patient, moderate complexity"},
+  {"code": "99215", "description": "Office/outpatient visit, established patient, high complexity"},
+  {"code": "99203", "description": "Office/outpatient visit, new patient, low complexity"},
+  {"code": "99204", "description": "Office/outpatient visit, new patient, moderate complexity"},
+  {"code": "G0438", "description": "Annual Wellness Visit, initial"},
+  {"code": "G0439", "description": "Annual Wellness Visit, subsequent"},
+  {"code": "93000", "description": "Electrocardiogram, complete"},
+  {"code": "80053", "description": "Comprehensive metabolic panel"},
+  {"code": "83036", "description": "Hemoglobin A1c"}
+]

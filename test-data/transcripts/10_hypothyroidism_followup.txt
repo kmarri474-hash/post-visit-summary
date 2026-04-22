@@ -1,0 +1,77 @@
+Dr. Park: Ms. Delacroix, thanks for coming in. Your TSH came back last week and I wanted to see you to go over it and talk about how you're feeling.
+
+Patient: Okay. I'm still tired all the time. And I've gained another four pounds since we last met, even though I'm eating the same.
+
+Dr. Park: Give me a sense of the symptoms. On a scale of "not at all" to "a lot" — fatigue?
+
+Patient: A lot. I'm falling asleep on the couch by eight every night.
+
+Dr. Park: Cold intolerance?
+
+Patient: Yes. I'm in wool socks indoors.
+
+Dr. Park: Constipation?
+
+Patient: Yes. Maybe every third day if I'm lucky.
+
+Dr. Park: Dry skin?
+
+Patient: Terrible. My shins look like tree bark.
+
+Dr. Park: Hair?
+
+Patient: Shedding more than usual. And my eyebrows are thinner on the outer edges.
+
+Dr. Park: Mood?
+
+Patient: Low. Not depressed, but flat. I have less patience with my kids.
+
+Dr. Park: Menstrual changes?
+
+Patient: My periods have been heavier.
+
+Dr. Park: Any chest palpitations, shakiness, sweating, or feeling overheated?
+
+Patient: No.
+
+Dr. Park: You've been on levothyroxine one hundred micrograms for six months now. Are you taking it consistently?
+
+Patient: Yes — first thing in the morning with water, nothing else for at least thirty minutes like you told me.
+
+Dr. Park: And no calcium, iron, or antacids within four hours?
+
+Patient: I take my calcium at lunch and my iron at dinner. That part I've been good about.
+
+Dr. Park: Any new medications, supplements, or big diet changes?
+
+Patient: I started taking biotin for my hair about two months ago.
+
+Dr. Park: Biotin can interfere with some thyroid assays — we'll keep that in mind. Your TSH came back at nine-point-two. That's elevated — normal is roughly half a point to about four. Your free T4 is zero-point-eight, which is on the low end of normal. So despite being on levothyroxine, you're still biochemically and clinically hypothyroid.
+
+Patient: What does that mean?
+
+Dr. Park: It means we haven't gotten you to a therapeutic dose yet. I'm going to increase your levothyroxine from one hundred to one-twenty-five micrograms daily. The rough rule is one-point-six micrograms per kilogram of body weight for full replacement. At your weight that's about one-thirty, so one-twenty-five is a reasonable next step. We'll recheck TSH in six to eight weeks — it takes that long for the pituitary to re-equilibrate. The target TSH is between point-five and two-point-five for most patients, sometimes higher in older adults.
+
+Patient: Why did it drift up?
+
+Dr. Park: Several possibilities. Your underlying Hashimoto's disease is progressive — the gland is still destroying itself, so dose requirements typically increase over time. Weight gain itself raises the dose you need. And absorption issues are common. Stop the biotin for two weeks before your next blood draw so we get an accurate result. Also — let me confirm: you're not pregnant, not planning a pregnancy in the next few months?
+
+Patient: Not planning. My youngest is three and we're done.
+
+Dr. Park: If pregnancy were on the table, we'd aim for a TSH below two-point-five and recheck every four weeks. Something to keep in mind.
+
+Patient: What about my weight and mood?
+
+Dr. Park: Both typically improve once you're at a therapeutic dose, though not overnight. Expect four to eight weeks before you really feel the difference. If the fatigue and mood don't improve after we're in target range, we'll look at other causes — iron deficiency, vitamin D, sleep apnea, and depression itself. I'm going to order a CBC, ferritin, twenty-five-hydroxy vitamin D, and a comprehensive metabolic panel today along with the repeat TSH in two months. I'll also check a lipid panel — hypothyroidism can raise cholesterol.
+
+Patient: Should I cut carbs? Try intermittent fasting?
+
+Dr. Park: The evidence for those in hypothyroidism is thin. Focus on adequate protein, getting twenty to thirty minutes of walking daily, and iodine through normal dietary sources — no mega-dosing. Avoid soy and high-fiber meals within an hour of your thyroid dose, as they can reduce absorption.
+
+Patient: My sister says her doctor put her on Armour thyroid. Should I try that?
+
+Dr. Park: Armour — desiccated thyroid — works for some patients who don't feel well on levothyroxine alone, but the evidence is mixed and dosing is trickier because the T4-T3 ratio is fixed. I'd rather first get you to target on levothyroxine. If you still feel poorly despite a normal TSH, we can discuss adding low-dose liothyronine or switching to a combination product. That's a six-month-from-now conversation, not today.
+
+Patient: Okay. I'll take the higher dose.
+
+Dr. Park: Good. I'll send the prescription today. Stop biotin, add walking, and I'll see you in two months after the repeat labs.
