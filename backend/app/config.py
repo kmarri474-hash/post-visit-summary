@@ -48,6 +48,14 @@ class Settings(BaseSettings):
             )
         return "sqlite+aiosqlite:///./pvs.db"
 
+    # Azure Cognitive Services Speech (for transcription + live streaming)
+    azure_speech_client_id: str | None = Field(default=None, alias="AZURE_SPEECH_CLIENT_ID")
+    azure_speech_client_secret: str | None = Field(default=None, alias="AZURE_SPEECH_CLIENT_SECRET")
+    azure_speech_tenant_id: str | None = Field(default=None, alias="AZURE_SPEECH_TENANT_ID")
+    azure_speech_resource_id: str | None = Field(default=None, alias="AZURE_SPEECH_RESOURCE_ID")
+    azure_speech_region: str | None = Field(default=None, alias="AZURE_SPEECH_REGION")
+    azure_speech_endpoint: str | None = Field(default=None, alias="AZURE_SPEECH_ENDPOINT")
+
     # CORS
     api_cors_origins: str = Field(
         default="http://localhost:5173,http://127.0.0.1:5173",
@@ -61,6 +69,16 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> List[str]:
         return [o.strip() for o in self.api_cors_origins.split(",") if o.strip()]
+
+    @property
+    def speech_configured(self) -> bool:
+        return bool(
+            self.azure_speech_client_id
+            and self.azure_speech_client_secret
+            and self.azure_speech_tenant_id
+            and self.azure_speech_resource_id
+            and self.azure_speech_region
+        )
 
     @property
     def azure_configured(self) -> bool:
