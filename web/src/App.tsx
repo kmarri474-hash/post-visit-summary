@@ -30,10 +30,12 @@ export default function App() {
             </div>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="badge badge-brand hidden sm:inline-flex">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-              Draft — clinician review required
-            </span>
+            {!loc.pathname.startsWith("/review") && (
+              <span className="badge badge-brand hidden sm:inline-flex">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+                Draft — clinician review required
+              </span>
+            )}
             <nav className="flex items-center gap-1">
               {nav.map((n) => {
                 const Icon = n.icon;

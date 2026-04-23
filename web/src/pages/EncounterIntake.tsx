@@ -79,7 +79,7 @@ function EncounterRow({ e }: { e: EncounterListItem }) {
             </div>
           )}
         </div>
-        <span className={`badge ${badgeClass}`}>{fullySigned ? "signed off" : e.status}</span>
+        <span className={`badge ${badgeClass}`}>{fullySigned ? "signed" : e.status}</span>
       </div>
     </Link>
   );
@@ -443,7 +443,7 @@ export default function EncounterIntake() {
               <span className="logo-mark w-8 h-8 bg-gradient-to-br from-emerald-500 to-brand-500">
                 <CheckCircle2 className="w-4 h-4" />
               </span>
-              Signed off
+              Signed
             </h2>
             <span className="badge badge-soft">{signedOff.length}</span>
           </div>
@@ -455,7 +455,7 @@ export default function EncounterIntake() {
               <EncounterRow key={e.id} e={e} />
             ))}
             {signedOff.length === 0 && (
-              <div className="text-sm text-slate-500">No encounters signed off yet.</div>
+              <div className="text-sm text-slate-500">No encounters signed yet.</div>
             )}
           </div>
         </section>

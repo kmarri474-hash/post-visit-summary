@@ -78,7 +78,7 @@ cat > "$OUT" <<HTML
 </div>
 
 <div class="card">
-  <h2>Artifacts per encounter (✓ = signed off)</h2>
+  <h2>Artifacts per encounter (✓ = signed)</h2>
   ${art}
 </div>
 
