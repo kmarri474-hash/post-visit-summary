@@ -49,6 +49,7 @@ class Settings(BaseSettings):
         return "sqlite+aiosqlite:///./pvs.db"
 
     # Azure Cognitive Services Speech (for transcription + live streaming)
+    azure_speech_key: str | None = Field(default=None, alias="AZURE_SPEECH_KEY")
     azure_speech_client_id: str | None = Field(default=None, alias="AZURE_SPEECH_CLIENT_ID")
     azure_speech_client_secret: str | None = Field(default=None, alias="AZURE_SPEECH_CLIENT_SECRET")
     azure_speech_tenant_id: str | None = Field(default=None, alias="AZURE_SPEECH_TENANT_ID")
@@ -72,6 +73,10 @@ class Settings(BaseSettings):
 
     @property
     def speech_configured(self) -> bool:
+        # Key-based: just need key + region (or endpoint)
+        if self.azure_speech_key and (self.azure_speech_region or self.azure_speech_endpoint):
+            return True
+        # AAD-based: need all credential fields
         return bool(
             self.azure_speech_client_id
             and self.azure_speech_client_secret
