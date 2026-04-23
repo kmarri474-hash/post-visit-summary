@@ -120,7 +120,7 @@ export default function App() {
             Full audit trail and evidence preservation is active.
           </p>
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            © 2024 Post-Visit Summary Pro
+            © 2026 Post-Visit Summary Pro
           </div>
         </div>
       </footer>
