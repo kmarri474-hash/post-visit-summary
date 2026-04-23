@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api } from "../lib/api";
+import { api, API_BASE } from "../lib/api";
 import {
   Upload,
   Play,
@@ -105,11 +105,11 @@ export default function EncounterIntake() {
   const [err, setErr] = useState<string | null>(null);
   const [expandedSample, setExpandedSample] = useState<string | null>(null);
 
-  // ── Ambient live listening ────────────────────────────────────────────────
+  // ── Ambient live listening (WebSocket proxy through backend) ──────────────
   const [listening, setListening] = useState(false);
   const [listenErr, setListenErr] = useState<string | null>(null);
   const [interimText, setInterimText] = useState("");
-  const recognizerRef = useRef<any>(null);
+  const recognizerRef = useRef<{ ws: WebSocket; stream: MediaStream; ctx: AudioContext; src: MediaStreamAudioSourceNode; proc: ScriptProcessorNode } | null>(null);
 
   async function startListening() {
     setListenErr(null);
@@ -120,73 +120,69 @@ export default function EncounterIntake() {
           "Microphone access requires HTTPS. Live transcription is not available over plain HTTP."
         );
       }
-      const { token, region, endpoint, authType } = await api.getSpeechToken();
 
-      // Dynamically import the Azure Speech JS SDK (loaded from npm)
-      const sdk = await import("microsoft-cognitiveservices-speech-sdk");
+      // Get microphone stream
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true } });
 
-      let speechConfig: any;
-      if (authType === "key") {
-        // Subscription key auth — use fromEndpoint or fromSubscription
-        if (endpoint) {
-          speechConfig = sdk.SpeechConfig.fromEndpoint(new URL(endpoint), token);
-        } else if (region) {
-          speechConfig = sdk.SpeechConfig.fromSubscription(token, region);
-        } else {
-          throw new Error("Speech token response missing both endpoint and region");
+      // Build WebSocket URL from API_BASE
+      const wsBase = API_BASE
+        ? API_BASE.replace(/^http/, "ws")
+        : `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
+      const ws = new WebSocket(`${wsBase}/api/speech/stream`);
+      ws.binaryType = "arraybuffer";
+
+      // AudioContext to capture PCM 16-bit mono 16kHz
+      const ctx = new AudioContext({ sampleRate: 16000 });
+      const src = ctx.createMediaStreamSource(stream);
+      const proc = ctx.createScriptProcessor(4096, 1, 1);
+
+      proc.onaudioprocess = (e) => {
+        if (ws.readyState !== WebSocket.OPEN) return;
+        const float32 = e.inputBuffer.getChannelData(0);
+        const int16 = new Int16Array(float32.length);
+        for (let i = 0; i < float32.length; i++) {
+          const s = Math.max(-1, Math.min(1, float32[i]));
+          int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
         }
-      } else {
-        // Authorization token (AAD) — use fromEndpoint or fromAuthorizationToken
-        if (endpoint) {
-          speechConfig = sdk.SpeechConfig.fromEndpoint(new URL(endpoint));
-          speechConfig.authorizationToken = token;
-        } else if (region) {
-          speechConfig = sdk.SpeechConfig.fromAuthorizationToken(token, region);
-        } else {
-          throw new Error("Speech token response missing both endpoint and region");
-        }
-      }
-      speechConfig.speechRecognitionLanguage = "en-US";
-
-      const audioConfig = sdk.AudioConfig.fromDefaultMicrophoneInput();
-      const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
-      recognizerRef.current = recognizer;
-
-      // Real-time interim results
-      recognizer.recognizing = (_s: any, e: any) => {
-        if (e.result.reason === sdk.ResultReason.RecognizingSpeech) {
-          setInterimText(e.result.text);
-        }
+        ws.send(int16.buffer);
       };
 
-      // Final recognized sentence → append to transcript
-      recognizer.recognized = (_s: any, e: any) => {
-        if (e.result.reason === sdk.ResultReason.RecognizedSpeech) {
-          const text = e.result.text.trim();
-          if (text) {
-            setTranscript((prev) => (prev ? prev + " " + text : text));
+      src.connect(proc);
+      proc.connect(ctx.destination);
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "recognizing") {
+            setInterimText(msg.text);
+          } else if (msg.type === "recognized") {
+            const text = msg.text?.trim();
+            if (text) {
+              setTranscript((prev) => (prev ? prev + " " + text : text));
+            }
+            setInterimText("");
+          } else if (msg.type === "error") {
+            setListenErr(`Listening error: ${msg.message}`);
+            stopListening();
           }
-          setInterimText("");
-        }
+        } catch { /* ignore parse errors */ }
       };
 
-      recognizer.canceled = (_s: any, e: any) => {
-        setListenErr(`Listening canceled: ${e.errorDetails || e.reason}`);
+      ws.onopen = () => setListening(true);
+      ws.onerror = () => {
+        setListenErr("WebSocket connection failed");
+        stopListening();
+      };
+      ws.onclose = () => {
         setListening(false);
         setInterimText("");
       };
 
-      recognizer.startContinuousRecognitionAsync(
-        () => setListening(true),
-        (err: any) => {
-          setListenErr(`Could not start microphone: ${err}`);
-          setListening(false);
-        },
-      );
+      recognizerRef.current = { ws, stream, ctx, src, proc };
     } catch (e: any) {
       setListenErr(
-        e?.message?.includes("503") || e?.message?.includes("not configured")
-          ? "Azure Speech is not configured on the server. Add AZURE_SPEECH_* vars to your .env."
+        e?.message?.includes("not configured")
+          ? "Azure Speech is not configured on the server."
           : `Live transcription unavailable: ${e.message || e}`,
       );
     }
@@ -195,15 +191,21 @@ export default function EncounterIntake() {
   function stopListening() {
     const r = recognizerRef.current;
     if (r) {
-      r.stopContinuousRecognitionAsync(
-        () => { setListening(false); setInterimText(""); recognizerRef.current = null; },
-        () => { setListening(false); setInterimText(""); recognizerRef.current = null; },
-      );
+      try { r.proc.disconnect(); } catch { /* ok */ }
+      try { r.src.disconnect(); } catch { /* ok */ }
+      try { r.ctx.close(); } catch { /* ok */ }
+      r.stream.getTracks().forEach((t) => t.stop());
+      if (r.ws.readyState === WebSocket.OPEN || r.ws.readyState === WebSocket.CONNECTING) {
+        r.ws.close();
+      }
+      recognizerRef.current = null;
     }
+    setListening(false);
+    setInterimText("");
   }
 
   useEffect(() => {
-    return () => { if (recognizerRef.current) recognizerRef.current.stopContinuousRecognitionAsync(() => { }, () => { }); };
+    return () => { stopListening(); };
   }, []);
   // ─────────────────────────────────────────────────────────────────────────
 

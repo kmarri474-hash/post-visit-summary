@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import tempfile
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, WebSocket, WebSocketDisconnect
 
 from ..config import get_settings
 
@@ -141,3 +142,109 @@ async def transcribe(file: UploadFile = File(...)) -> dict:
                     Path(p).unlink(missing_ok=True)
                 except Exception:
                     pass
+
+
+# ── WebSocket live-transcription proxy ────────────────────────────────────────
+
+@router.websocket("/speech/stream")
+async def speech_stream(ws: WebSocket):
+    """Proxy live audio from the browser to Azure Speech SDK via the VNet.
+
+    Protocol:
+      Browser → Server:  binary frames of 16-bit PCM mono 16 kHz audio
+      Server → Browser:  JSON text frames:
+        {"type":"recognizing", "text":"partial..."}
+        {"type":"recognized", "text":"Final sentence."}
+        {"type":"error", "message":"..."}
+    """
+    await ws.accept()
+
+    s = get_settings()
+    if not s.speech_configured:
+        await ws.send_json({"type": "error", "message": "Speech not configured"})
+        await ws.close()
+        return
+
+    try:
+        import azure.cognitiveservices.speech as speechsdk
+    except ImportError:
+        await ws.send_json({"type": "error", "message": "Speech SDK not installed"})
+        await ws.close()
+        return
+
+    # Build speech config (same as _transcribe_sync)
+    if s.azure_speech_key:
+        if s.azure_speech_endpoint:
+            speech_config = speechsdk.SpeechConfig(
+                subscription=s.azure_speech_key, endpoint=s.azure_speech_endpoint,
+            )
+        else:
+            speech_config = speechsdk.SpeechConfig(
+                subscription=s.azure_speech_key, region=s.azure_speech_region,
+            )
+    else:
+        from ..speech import _get_raw_access_token
+        raw_token, _ = _get_raw_access_token()
+        auth_token = f"aad#{s.azure_speech_resource_id}#{raw_token}"
+        if s.azure_speech_endpoint:
+            speech_config = speechsdk.SpeechConfig(endpoint=s.azure_speech_endpoint)
+            speech_config.authorization_token = auth_token
+        else:
+            speech_config = speechsdk.SpeechConfig(
+                auth_token=auth_token, region=s.azure_speech_region,
+            )
+
+    speech_config.speech_recognition_language = "en-US"
+    speech_config.set_property_by_name("OPENSSL_DISABLE_CRL_CHECK", "true")
+
+    # Push-based audio stream
+    stream_format = speechsdk.audio.AudioStreamFormat(
+        samples_per_second=16000, bits_per_sample=16, channels=1,
+    )
+    push_stream = speechsdk.audio.PushAudioInputStream(stream_format)
+    audio_config = speechsdk.audio.AudioConfig(stream=push_stream)
+    recognizer = speechsdk.SpeechRecognizer(
+        speech_config=speech_config, audio_config=audio_config,
+    )
+
+    loop = asyncio.get_running_loop()
+
+    def on_recognizing(evt):
+        if evt.result.reason == speechsdk.ResultReason.RecognizingSpeech:
+            asyncio.run_coroutine_threadsafe(
+                ws.send_json({"type": "recognizing", "text": evt.result.text}), loop,
+            )
+
+    def on_recognized(evt):
+        if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech:
+            text = evt.result.text.strip()
+            if text:
+                asyncio.run_coroutine_threadsafe(
+                    ws.send_json({"type": "recognized", "text": text}), loop,
+                )
+
+    def on_canceled(evt):
+        msg = str(evt.reason)
+        if hasattr(evt, "error_details") and evt.error_details:
+            msg += f": {evt.error_details}"
+        asyncio.run_coroutine_threadsafe(
+            ws.send_json({"type": "error", "message": msg}), loop,
+        )
+
+    recognizer.recognizing.connect(on_recognizing)
+    recognizer.recognized.connect(on_recognized)
+    recognizer.canceled.connect(on_canceled)
+    recognizer.start_continuous_recognition()
+
+    try:
+        while True:
+            data = await ws.receive_bytes()
+            push_stream.write(data)
+    except WebSocketDisconnect:
+        pass
+    except Exception as exc:
+        log.warning("Speech WS error: %s", exc)
+    finally:
+        push_stream.close()
+        recognizer.stop_continuous_recognition()
+        log.info("Speech WS proxy session ended")
