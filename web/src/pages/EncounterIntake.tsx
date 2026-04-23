@@ -577,7 +577,12 @@ export default function EncounterIntake() {
           {err && <div className="mt-4 p-3 rounded bg-rose-50 text-rose-700 text-sm">{err}</div>}
 
           <div className="mt-5 flex justify-end">
-            <button className="btn btn-primary" disabled={busy} onClick={runCustom}>
+            <button
+              className="btn btn-primary"
+              disabled={busy || !transcript.trim()}
+              onClick={runCustom}
+              title={!transcript.trim() ? "Enter a transcript before running" : undefined}
+            >
               <Play className="w-4 h-4" /> Run agents
             </button>
           </div>

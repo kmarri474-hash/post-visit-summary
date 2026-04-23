@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { api } from "../lib/api";
 import type { ArtifactOut, EncounterDetail } from "../lib/types";
@@ -65,6 +65,7 @@ const TABS: { key: ArtifactOut["kind"]; label: string; icon: any }[] = [
 
 export default function DraftReview() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [data, setData] = useState<EncounterDetail | null>(null);
   const [active, setActive] = useState<ArtifactOut["kind"]>("note");
   const [err, setErr] = useState<string | null>(null);
@@ -122,11 +123,12 @@ export default function DraftReview() {
     try {
       const res: any = await api.signoffArtifact(current.id, comment, override);
       await load();
-      setToast(
-        res?.encounter_signed
-          ? "Encounter fully signed!"
-          : `${TABS.find((t) => t.key === active)?.label || "Artifact"} signed`
-      );
+      if (res?.encounter_signed) {
+        setToast("Encounter fully signed! Redirecting…");
+        setTimeout(() => navigate("/intake"), 1800);
+      } else {
+        setToast(`${TABS.find((t) => t.key === active)?.label || "Artifact"} signed`);
+      }
     } catch (e: any) {
       const msg = String(e.message || e);
       if (msg.includes("blocked") && !override) {
