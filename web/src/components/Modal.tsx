@@ -50,6 +50,7 @@ export default function Modal({ open, onClose, children }: ModalProps) {
             tabIndex={-1}
             role="dialog"
             aria-modal
+            onClick={(e) => e.stopPropagation()}
             initial={{ opacity: 0, scale: 0.95, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}

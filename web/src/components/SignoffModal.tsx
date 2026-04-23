@@ -98,10 +98,11 @@ export default function SignoffModal({
       </p>
 
       <div className="mt-5 flex items-center justify-end gap-3">
-        <button className="btn btn-outline" onClick={onCancel}>
+        <button type="button" className="btn btn-outline" onClick={onCancel}>
           Cancel
         </button>
         <button
+          type="button"
           className={`btn ${isBlocked ? "bg-amber-600 hover:bg-amber-700 text-white" : "btn-primary"}`}
           onClick={handleSubmit}
           disabled={isBlocked && !comment.trim()}
