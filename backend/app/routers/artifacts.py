@@ -120,10 +120,21 @@ async def signoff_artifact(
     ))
     await session.flush()
 
+    # Capture values we need for the response before expiring the session
+    # cache (async SQLAlchemy doesn't support lazy loads after expire).
+    signed_at_iso = so.signed_at.isoformat()
+    final_version = latest.version
+    artifact_id = a.id
+    artifact_kind = a.kind
+    encounter_id = a.encounter_id
+
     # If every artifact for this encounter now has a signoff, promote the
     # encounter to "signed" so the home page can bucket it separately.
+    # Expire cached identity-map objects so selectinload re-fetches signoffs
+    # (needed because expire_on_commit=False keeps stale `signoff=None`).
+    session.expire_all()
     enc = (await session.execute(
-        select(Encounter).where(Encounter.id == a.encounter_id)
+        select(Encounter).where(Encounter.id == encounter_id)
         .options(selectinload(Encounter.artifacts).selectinload(Artifact.signoff))
     )).scalar_one_or_none()
     encounter_signed = False
@@ -132,13 +143,13 @@ async def signoff_artifact(
         encounter_signed = True
         session.add(AuditLog(
             encounter_id=enc.id, actor=x_user_id, action="encounter_signed",
-            payload={"final_artifact_id": a.id, "final_kind": a.kind},
+            payload={"final_artifact_id": artifact_id, "final_kind": artifact_kind},
         ))
 
     await session.commit()
     return {
         "ok": True,
-        "signed_at": so.signed_at.isoformat(),
-        "final_version": latest.version,
+        "signed_at": signed_at_iso,
+        "final_version": final_version,
         "encounter_signed": encounter_signed,
     }
