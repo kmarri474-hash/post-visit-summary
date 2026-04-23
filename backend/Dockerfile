@@ -6,11 +6,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# No apt install: all Python deps ship prebuilt wheels for linux/amd64
-# (avoids corporate-proxy issues with deb.debian.org).
+# libssl needed by azure-cognitiveservices-speech SDK
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml ./
-RUN pip install --upgrade pip && pip install -e .
+RUN pip install --upgrade pip && pip install -e ".[azure-speech]"
 
 COPY . .
 

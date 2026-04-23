@@ -1,0 +1,48 @@
+# Multi-stage production build for the Vite/React frontend.
+#
+# Stage 1 compiles the SPA with the supplied VITE_API_BASE_URL baked in.
+# Stage 2 serves the static bundle from nginx with an SPA history fallback.
+#
+# Build:
+#   docker build -f Dockerfile.prod \
+#     --build-arg VITE_API_BASE_URL=https://pvs-api.example.azurecontainerapps.io \
+#     -t pvs-web:latest .
+#
+# Run:
+#   docker run --rm -p 8080:8080 pvs-web:latest   # visit http://localhost:8080
+
+# ---------- build ----------
+FROM node:20-alpine AS build
+WORKDIR /app
+
+# Force the public npm registry inside the build — the host's ~/.npmrc
+# may point at a private corporate Artifactory that isn't reachable from the
+# container network and whose tokens aren't present here.
+RUN printf 'registry=https://registry.npmjs.org/\nfund=false\naudit=false\n' > /root/.npmrc
+
+# Copy manifests only. We deliberately SKIP package-lock.json because the
+# host's lockfile pins `resolved` URLs at a private Artifactory that isn't
+# reachable from the build container. `npm install` regenerates a lockfile
+# inside the image against the public registry. Versions are still pinned
+# by the semver ranges in package.json.
+COPY package.json ./
+RUN npm install --no-audit --no-fund
+
+COPY . .
+
+ARG VITE_API_BASE_URL=http://localhost:8000
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
+RUN npm run build
+
+# ---------- runtime ----------
+FROM nginx:1.27-alpine AS runtime
+
+# Small, SPA-aware nginx config (listens on 8080 so non-root can bind).
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Static bundle
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 8080
+CMD ["nginx", "-g", "daemon off;"]

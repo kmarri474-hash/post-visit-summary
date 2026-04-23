@@ -28,7 +28,13 @@ build/
 scripts/screenshots/db_preview.html
 scripts/screenshots/package-lock.json
 
+# Local-only Azure deploy artifacts (passwords, parameter values)
+infra/.pg_password.local
+infra/*.parameters.local.json
+infra/*.tfstate*
+
 # Editor / IDE scratch
 .scratch/
 .idea/
 .vscode/
+azure-deploy-pvs-*.md

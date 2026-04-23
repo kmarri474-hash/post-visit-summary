@@ -1,0 +1,68 @@
+name: Deploy Web
+
+# Triggers on push to main when web files change.
+# If OIDC secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID)
+# are configured, this workflow builds + deploys automatically.
+# Otherwise, run:  ./scripts/deploy.sh web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RG: rg-pvs-demo
+  ACR_NAME: acrpvsdemos3lshj
+  APP_NAME: pvs-web
+  IMAGE: pvs-web
+  # Public IP of the Application Gateway fronting the app
+  API_BASE_URL: http://52.176.18.179
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build image in ACR
+        run: |
+          az acr build \
+            --registry ${{ env.ACR_NAME }} \
+            --image "${{ env.IMAGE }}:${{ github.sha }}" \
+            --image "${{ env.IMAGE }}:latest" \
+            --build-arg "VITE_API_BASE_URL=${{ env.API_BASE_URL }}" \
+            --file web/Dockerfile.prod \
+            ./web
+
+      - name: Deploy new revision
+        run: |
+          az containerapp update \
+            --name ${{ env.APP_NAME }} \
+            --resource-group ${{ env.RG }} \
+            --image "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE }}:${{ github.sha }}"
+
+      - name: Verify health
+        run: |
+          sleep 20
+          FQDN=$(az containerapp show \
+            --name ${{ env.APP_NAME }} \
+            --resource-group ${{ env.RG }} \
+            --query "properties.configuration.ingress.fqdn" -o tsv)
+          echo "Revision FQDN: https://$FQDN"

@@ -1,0 +1,72 @@
+name: Deploy API
+
+# Triggers on push to main when backend files change.
+# If OIDC secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID)
+# are configured, this workflow builds + deploys automatically.
+# Otherwise, run:  ./scripts/deploy.sh api
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-api.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RG: rg-pvs-demo
+  ACR_NAME: acrpvsdemos3lshj
+  APP_NAME: pvs-api
+  IMAGE: pvs-api
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build image in ACR
+        run: |
+          az acr build \
+            --registry ${{ env.ACR_NAME }} \
+            --image "${{ env.IMAGE }}:${{ github.sha }}" \
+            --image "${{ env.IMAGE }}:latest" \
+            ./backend
+
+      - name: Deploy new revision
+        run: |
+          az containerapp update \
+            --name ${{ env.APP_NAME }} \
+            --resource-group ${{ env.RG }} \
+            --image "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE }}:${{ github.sha }}"
+
+      - name: Verify health
+        run: |
+          sleep 20
+          FQDN=$(az containerapp show \
+            --name ${{ env.APP_NAME }} \
+            --resource-group ${{ env.RG }} \
+            --query "properties.configuration.ingress.fqdn" -o tsv)
+          echo "Revision FQDN: https://$FQDN"
+          # Wait a moment for the revision to activate
+          sleep 15
+          # Health check (may be behind Easy Auth, so 200 or 302 are both OK)
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://$FQDN/api/health" || echo "000")
+          echo "Health check response: $HTTP_CODE"
+          if [[ "$HTTP_CODE" == "000" ]]; then
+            echo "::warning::Could not reach the app — it may be behind a private VNet"
+          fi

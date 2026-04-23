@@ -1,3 +1,9 @@
 node_modules
 dist
 .DS_Store
+.git
+.vite
+# Exclude the host-generated lockfile: it pins `resolved` URLs at a private
+# corporate Artifactory that isn't reachable from container builds. The
+# Dockerfile (Dockerfile.prod) regenerates one against public npmjs.
+package-lock.json
