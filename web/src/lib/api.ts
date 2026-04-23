@@ -1,4 +1,4 @@
-export const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:8000";
+export const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 const USER_ID_KEY = "pvs.userId";
 export function getUserId(): string {

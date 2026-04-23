@@ -113,6 +113,11 @@ export default function EncounterIntake() {
     setListenErr(null);
     setInterimText("");
     try {
+      if (!navigator.mediaDevices) {
+        throw new Error(
+          "Microphone access requires HTTPS. Live transcription is not available over plain HTTP."
+        );
+      }
       const { token, region, endpoint, authType } = await api.getSpeechToken();
 
       // Dynamically import the Azure Speech JS SDK (loaded from npm)
