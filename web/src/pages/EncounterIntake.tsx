@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { api, API_BASE } from "../lib/api";
 import {
   Upload,
@@ -43,45 +44,70 @@ function isFullySigned(e: EncounterListItem): boolean {
   return total > 0 && signed >= total;
 }
 
+const containerAnim = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemAnim = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0 },
+};
+
 function EncounterRow({ e }: { e: EncounterListItem }) {
   const isDemo = e.id.startsWith("demo-");
   const fullySigned = isFullySigned(e);
   const badgeClass = fullySigned
-    ? "bg-emerald-100 text-emerald-800"
+    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
     : e.status === "draft"
-      ? "bg-indigo-100 text-indigo-800"
+      ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400"
       : e.status === "running"
-        ? "bg-amber-100 text-amber-800"
-        : "bg-slate-100 text-slate-700";
+        ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+        : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400";
   const target = e.status === "created" || e.status === "running" ? `/run/${e.id}` : `/review/${e.id}`;
+
   return (
-    <Link
-      to={target}
-      className="block border border-slate-200 dark:border-slate-700 rounded-lg p-3 hover:border-brand-400 hover:bg-brand-50/40 dark:hover:bg-brand-500/10 transition"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="font-medium truncate flex items-center gap-2">
-            {(isDemo || fullySigned) && (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            )}
-            {e.patient_ref}
-          </div>
-          <div className="text-xs text-slate-500 truncate">
-            {e.clinician_ref} · {e.source_type} · {new Date(e.created_at).toLocaleString()}
-          </div>
-          {typeof e.artifacts_total === "number" && e.artifacts_total > 0 && !fullySigned && (
-            <div className="text-[11px] mt-1 text-slate-500">
-              <span className={e.artifacts_signed ? "text-emerald-700 font-medium" : ""}>
-                {e.artifacts_signed ?? 0}
-              </span>
-              <span> / {e.artifacts_total} artifacts signed</span>
+    <motion.div variants={itemAnim}>
+      <Link
+        to={target}
+        className="group block border border-slate-200 dark:border-slate-700/50 rounded-xl p-3.5 hover:border-brand-400/50 hover:bg-brand-50/40 dark:hover:bg-brand-500/5 transition-all duration-300 hover:shadow-soft"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="font-semibold truncate flex items-center gap-2 text-slate-900 dark:text-slate-100">
+              {(isDemo || fullySigned) && (
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+              )}
+              {e.patient_ref}
             </div>
-          )}
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+              {e.clinician_ref} · {e.source_type} · {new Date(e.created_at).toLocaleDateString()}
+            </div>
+            {typeof e.artifacts_total === "number" && e.artifacts_total > 0 && !fullySigned && (
+              <div className="text-[10px] mt-1.5 flex items-center gap-2">
+                <div className="h-1 flex-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-brand-500 rounded-full"
+                    style={{ width: `${((e.artifacts_signed ?? 0) / e.artifacts_total) * 100}%` }}
+                  />
+                </div>
+                <span className="text-slate-500 shrink-0">
+                  {e.artifacts_signed ?? 0}/{e.artifacts_total} signed
+                </span>
+              </div>
+            )}
+          </div>
+          <span className={`badge text-[10px] px-2 py-0.5 rounded-full font-medium ${badgeClass}`}>
+            {fullySigned ? "signed" : e.status}
+          </span>
         </div>
-        <span className={`badge ${badgeClass}`}>{fullySigned ? "signed" : e.status}</span>
-      </div>
-    </Link>
+      </Link>
+    </motion.div>
   );
 }
 
@@ -121,17 +147,20 @@ export default function EncounterIntake() {
         );
       }
 
-      // Get microphone stream
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true } });
 
-      // Build WebSocket URL from API_BASE
-      const wsBase = API_BASE
-        ? API_BASE.replace(/^http/, "ws")
-        : `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
-      const ws = new WebSocket(`${wsBase}/api/speech/stream`);
+      const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      let wsBase = "";
+      if (API_BASE && API_BASE.startsWith("http")) {
+        wsBase = API_BASE.replace(/^https?:/, wsProtocol).replace("localhost", "127.0.0.1");
+      } else {
+        wsBase = `${wsProtocol}//${window.location.host}${API_BASE || ""}`;
+      }
+      const wsUrl = `${wsBase}/api/speech/stream`.replace(/([^:]\/)\/+/g, "$1");
+      console.log("[EncounterIntake] Connecting to WebSocket:", wsUrl);
+      const ws = new WebSocket(wsUrl);
       ws.binaryType = "arraybuffer";
 
-      // AudioContext to capture PCM 16-bit mono 16kHz
       const ctx = new AudioContext({ sampleRate: 16000 });
       const src = ctx.createMediaStreamSource(stream);
       const proc = ctx.createScriptProcessor(4096, 1, 1);
@@ -213,7 +242,6 @@ export default function EncounterIntake() {
   useEffect(() => {
     return () => { stopListening(); };
   }, []);
-  // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     api.listSamples().then(setSamples).catch(() => { });
@@ -293,307 +321,362 @@ export default function EncounterIntake() {
   const drafts = saved.filter((e) => !isFullySigned(e));
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial="hidden"
+      animate="show"
+      variants={containerAnim}
+      className="space-y-8 pb-12"
+    >
       {/* Hero */}
-      <section className="hero flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 p-5 sm:p-6">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 text-[11px] sm:text-xs uppercase tracking-[0.18em] text-white/80 mb-2">
-            <Sparkles className="w-3.5 h-3.5" /> New encounter
-          </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-tight">
-            Turn a visit into a draft note, PCP handoff and coding in seconds.
-          </h1>
-          <p className="mt-2 text-white/85 text-sm md:text-base">
-            Pick a seeded encounter to run the full agent graph, open a saved draft, or paste your own
-            transcript. Every output ships with evidence citations and a mandatory clinician sign-off.
-          </p>
-        </div>
-        <div className="relative z-10 grid grid-cols-3 gap-2 sm:gap-3 text-center w-full lg:w-auto lg:min-w-[360px]">
-          {[
-            { label: "Agents", value: "7", to: "/about/agents" },
-            { label: "Artifacts", value: "5", to: "/about/artifacts" },
-            { label: "Guardrails", value: "on", to: "/about/guardrails" },
-          ].map((m) => (
-            <Link
-              key={m.label}
-              to={m.to}
-              aria-label={`Learn about ${m.label}`}
-              className="group rounded-xl bg-white/10 backdrop-blur-sm ring-1 ring-white/20 px-2 sm:px-4 py-2.5 sm:py-3 hover:bg-white/20 hover:ring-white/40 transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/70"
+      <section className="relative overflow-hidden rounded-3xl bg-slate-900 p-8 sm:p-10 shadow-2xl ring-1 ring-white/10">
+        <div className="absolute inset-0 bg-brand-gradient opacity-10 blur-3xl animate-pulse" />
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-accent-500/20 rounded-full blur-3xl" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+          <div className="max-w-2xl">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-brand-300 mb-4"
             >
-              <div className="text-xl sm:text-2xl font-bold">{m.value}</div>
-              <div className="text-[9px] sm:text-[10px] uppercase tracking-widest text-white/80 group-hover:text-white">
-                {m.label}
-              </div>
-            </Link>
-          ))}
+              <Sparkles className="w-3.5 h-3.5" /> New encounter
+            </motion.div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.1] text-white">
+              Turn a visit into a <span className="text-transparent bg-clip-text bg-brand-gradient">draft note</span>, PCP handoff and coding in seconds.
+            </h1>
+            <p className="mt-4 text-slate-400 text-base md:text-lg max-w-xl leading-relaxed">
+              Pick a seeded encounter to run the full agent graph, open a saved draft, or paste your own
+              transcript. Every output ships with evidence citations and a mandatory clinician sign-off.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full lg:w-auto lg:min-w-[400px]">
+            {[
+              { label: "Agents", value: "7", to: "/about/agents", icon: Activity },
+              { label: "Artifacts", value: "5", to: "/about/artifacts", icon: FileText },
+              { label: "Guardrails", value: "on", to: "/about/guardrails", icon: CheckCircle2 },
+            ].map((m) => (
+              <Link
+                key={m.label}
+                to={m.to}
+                className="group relative flex flex-col items-center justify-center rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-4 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+              >
+                <m.icon className="w-5 h-5 text-brand-400 mb-2 group-hover:scale-110 transition-transform" />
+                <div className="text-2xl font-bold text-white">{m.value}</div>
+                <div className="text-[10px] uppercase tracking-widest text-slate-500 group-hover:text-slate-300">
+                  {m.label}
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Samples */}
-        <section className="card card-gradient p-6 lg:col-span-1">
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="font-semibold flex items-center gap-2">
-              <span className="logo-mark w-8 h-8">
-                <FileText className="w-4 h-4" />
-              </span>
-              Seeded encounters
-            </h2>
-            <span className="badge badge-soft">{samples.length}</span>
-          </div>
-          <p className="text-sm text-slate-500 mb-4">
-            Fastest path to a demo — loads a realistic encounter and runs the full agent graph live.
-          </p>
-          <div className="space-y-3">
-            {samples.map((s) => {
-              const isExpanded = expandedSample === s.id;
-              const si = s.structured_input ?? {};
-              return (
-                <div
-                  key={s.id}
-                  className="group relative border border-slate-200/80 rounded-xl p-4 bg-white/70 transition hover:border-brand-300 hover:shadow-soft"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-brand-gradient-soft ring-1 ring-brand-200 flex items-center justify-center text-brand-700">
-                      <Stethoscope className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-slate-900">{s.label}</div>
-                      <div className="text-xs text-slate-500 truncate">
-                        {s.patient_ref} · {s.clinician_ref}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Lists */}
+        <div className="lg:col-span-1 space-y-8">
+          {/* Samples */}
+          <section className="card-glass p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                <div className="w-8 h-8 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-600">
+                  <FileText className="w-4 h-4" />
+                </div>
+                Seeded encounters
+              </h2>
+              <span className="badge badge-soft">{samples.length}</span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+              Fastest path to a demo — loads a realistic encounter and runs the full agent graph live.
+            </p>
+
+            <div className="space-y-4">
+              {samples.map((s) => {
+                const isExpanded = expandedSample === s.id;
+                const si = s.structured_input ?? {};
+                return (
+                  <motion.div
+                    key={s.id}
+                    variants={itemAnim}
+                    layout
+                    className="group relative border border-slate-200 dark:border-slate-700/50 rounded-2xl p-4 bg-white/40 dark:bg-slate-900/40 hover:border-brand-400/50 transition-all duration-300 hover:shadow-soft"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-brand-gradient-soft ring-1 ring-brand-200/50 dark:ring-brand-500/20 flex items-center justify-center text-brand-700 dark:text-brand-400">
+                        <Stethoscope className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-bold text-slate-900 dark:text-slate-100 leading-tight">{s.label}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                          {s.patient_ref} · {s.clinician_ref}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Toggle input preview */}
-                  <button
-                    type="button"
-                    className="mt-2 flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 hover:underline"
-                    onClick={() => setExpandedSample(isExpanded ? null : s.id)}
-                  >
-                    <ChevronDown
-                      className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""
-                        }`}
-                    />
-                    {isExpanded ? "Hide input" : "Preview input"}
-                  </button>
+                    <button
+                      type="button"
+                      className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 transition-colors"
+                      onClick={() => setExpandedSample(isExpanded ? null : s.id)}
+                    >
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
+                      />
+                      {isExpanded ? "Hide input" : "Preview input"}
+                    </button>
 
-                  {/* Collapsible input details */}
-                  {isExpanded && (
-                    <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 text-xs text-slate-600">
-                      {si.chief_complaint && (
-                        <div>
-                          <span className="font-medium text-slate-700">Chief complaint: </span>
-                          {si.chief_complaint}
-                        </div>
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3 text-[11px] text-slate-600 dark:text-slate-400">
+                            {si.chief_complaint && (
+                              <div>
+                                <span className="font-bold text-slate-900 dark:text-slate-200">Chief complaint: </span>
+                                {si.chief_complaint}
+                              </div>
+                            )}
+                            {si.vitals && Object.values(si.vitals).some(Boolean) && (
+                              <div>
+                                <span className="font-bold text-slate-900 dark:text-slate-200">Vitals: </span>
+                                {[
+                                  si.vitals.bp && `BP ${si.vitals.bp}`,
+                                  si.vitals.hr && `HR ${si.vitals.hr}`,
+                                  si.vitals.spo2 && `SpO₂ ${si.vitals.spo2}%`,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </div>
+                            )}
+                            {s.transcript && (
+                              <div>
+                                <div className="font-bold text-slate-900 dark:text-slate-200 mb-1">Transcript</div>
+                                <p className="whitespace-pre-wrap font-mono text-[10px] bg-slate-50 dark:bg-slate-950/50 rounded-lg p-2.5 text-slate-500 dark:text-slate-400 max-h-40 overflow-y-auto border border-slate-100 dark:border-slate-800">
+                                  {s.transcript}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
                       )}
-                      {si.vitals && Object.values(si.vitals).some(Boolean) && (
-                        <div>
-                          <span className="font-medium text-slate-700">Vitals: </span>
-                          {[
-                            si.vitals.bp && `BP ${si.vitals.bp}`,
-                            si.vitals.hr && `HR ${si.vitals.hr}`,
-                            si.vitals.spo2 && `SpO₂ ${si.vitals.spo2}%`,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </div>
-                      )}
-                      {s.transcript && (
-                        <div>
-                          <div className="font-medium text-slate-700 mb-0.5">Transcript</div>
-                          <p className="whitespace-pre-wrap font-mono text-[11px] bg-slate-50 rounded p-2 text-slate-500 max-h-60 overflow-y-auto">
-                            {s.transcript}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    </AnimatePresence>
 
-                  <button
-                    className="btn btn-primary mt-3 w-full"
-                    disabled={busy}
-                    onClick={() => runSample(s)}
-                  >
-                    <Play className="w-4 h-4" /> Run agents
-                  </button>
+                    <button
+                      className="btn btn-primary mt-4 w-full shadow-brand"
+                      disabled={busy}
+                      onClick={() => runSample(s)}
+                    >
+                      <Play className="w-4 h-4" /> Run agents
+                    </button>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Drafts */}
+          <section className="card-glass p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                <div className="w-8 h-8 rounded-lg bg-accent-500/10 flex items-center justify-center text-accent-600">
+                  <FolderOpen className="w-4 h-4" />
                 </div>
-              );
-            })}
-            {samples.length === 0 && <div className="text-sm text-slate-500">No samples available.</div>}
-          </div>
+                Drafts in review
+              </h2>
+              <span className="badge badge-soft">{drafts.length}</span>
+            </div>
+            <div className="space-y-3 mt-5 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+              {drafts.map((e) => (
+                <EncounterRow key={e.id} e={e} />
+              ))}
+              {drafts.length === 0 && (
+                <div className="text-center py-8 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                  <p className="text-xs text-slate-500">No drafts yet — run an encounter to start.</p>
+                </div>
+              )}
+            </div>
+          </section>
 
-          <div className="flex items-center justify-between mt-7 mb-1">
-            <h2 className="font-semibold flex items-center gap-2">
-              <span className="logo-mark w-8 h-8 bg-gradient-to-br from-accent-500 to-brand-500">
-                <FolderOpen className="w-4 h-4" />
-              </span>
-              Drafts in review
-            </h2>
-            <span className="badge badge-soft">{drafts.length}</span>
-          </div>
-          <p className="text-sm text-slate-500 mb-3">
-            Open an existing draft — demo encounters are pre-populated, no agent run required.
-          </p>
-          <div className="space-y-2 max-h-72 overflow-y-auto">
-            {drafts.map((e) => (
-              <EncounterRow key={e.id} e={e} />
-            ))}
-            {drafts.length === 0 && (
-              <div className="text-sm text-slate-500">No drafts yet — run an encounter to start.</div>
-            )}
-          </div>
+          {/* Signed */}
+          <section className="card-glass p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                Signed off
+              </h2>
+              <span className="badge badge-soft">{signedOff.length}</span>
+            </div>
+            <div className="space-y-3 mt-5 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+              {signedOff.map((e) => (
+                <EncounterRow key={e.id} e={e} />
+              ))}
+              {signedOff.length === 0 && (
+                <div className="text-center py-8 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                  <p className="text-xs text-slate-500">No encounters signed yet.</p>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
 
-          <div className="flex items-center justify-between mt-7 mb-1">
-            <h2 className="font-semibold flex items-center gap-2">
-              <span className="logo-mark w-8 h-8 bg-gradient-to-br from-emerald-500 to-brand-500">
-                <CheckCircle2 className="w-4 h-4" />
-              </span>
-              Signed
-            </h2>
-            <span className="badge badge-soft">{signedOff.length}</span>
-          </div>
-          <p className="text-sm text-slate-500 mb-3">
-            Clinician-reviewed summaries with every artifact signed.
-          </p>
-          <div className="space-y-2 max-h-72 overflow-y-auto">
-            {signedOff.map((e) => (
-              <EncounterRow key={e.id} e={e} />
-            ))}
-            {signedOff.length === 0 && (
-              <div className="text-sm text-slate-500">No encounters signed yet.</div>
-            )}
-          </div>
-        </section>
+        {/* Right Column: Custom Intake */}
+        <div className="lg:col-span-2">
+          <section className="card-glass p-8 sticky top-24">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-bold text-xl flex items-center gap-3 text-slate-900 dark:text-slate-100">
+                <div className="w-10 h-10 rounded-xl bg-brand-gradient flex items-center justify-center text-white shadow-brand">
+                  <Mic className="w-5 h-5" />
+                </div>
+                New encounter
+              </h2>
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 text-[10px] font-bold uppercase tracking-widest">
+                <Activity className="w-3 h-3 animate-pulse" /> Live
+              </div>
+            </div>
 
-        {/* Custom intake */}
-        <section className="card p-6 lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold flex items-center gap-2">
-              <span className="logo-mark w-8 h-8">
-                <Mic className="w-4 h-4" />
-              </span>
-              New encounter
-            </h2>
-            <span className="badge badge-brand">
-              <Activity className="w-3 h-3" /> Live
-            </span>
-          </div>
+            <div className="flex flex-wrap items-center gap-4 mb-6">
+              <label className="btn btn-outline cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <Upload className="w-4 h-4" />
+                <span className="font-semibold">{uploading ? "Transcribing…" : "Upload audio"}</span>
+                <input type="file" accept="audio/*" className="hidden" onChange={handleAudio} disabled={uploading || listening} />
+              </label>
 
-          <div className="flex flex-wrap items-center gap-3 mb-4">
-            {/* Upload audio */}
-            <label className="btn btn-outline cursor-pointer">
-              <Upload className="w-4 h-4" />
-              <span>{uploading ? "Transcribing…" : "Upload audio"}</span>
-              <input type="file" accept="audio/*" className="hidden" onChange={handleAudio} disabled={uploading || listening} />
-            </label>
+              {!listening ? (
+                <button
+                  type="button"
+                  className="btn btn-outline flex items-center gap-2 border-slate-200 dark:border-slate-700 hover:border-rose-400 hover:text-rose-600 transition-all"
+                  onClick={startListening}
+                  disabled={uploading || busy}
+                >
+                  <Radio className="w-4 h-4 text-rose-500" />
+                  <span className="font-semibold">Start live transcript</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-primary bg-rose-500 border-rose-500 hover:bg-rose-600 hover:border-rose-600 animate-pulse"
+                  onClick={stopListening}
+                >
+                  <MicOff className="w-4 h-4" />
+                  <span className="font-semibold">Stop listening</span>
+                </button>
+              )}
 
-            {/* Live / ambient microphone */}
-            {!listening ? (
-              <button
-                type="button"
-                className="btn btn-outline flex items-center gap-2"
-                onClick={startListening}
-                disabled={uploading || busy}
-                title="Start ambient voice transcription"
+              <span className="text-xs text-slate-400 font-medium">or paste a transcript below</span>
+            </div>
+
+            <AnimatePresence>
+              {(listening || interimText) && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mb-4 flex items-center gap-3 rounded-2xl border border-rose-100 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-900/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-400 backdrop-blur-sm"
+                >
+                  <div className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                  <span className="italic font-medium">{interimText || "Listening for speech…"}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {listenErr && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-xs text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30"
               >
-                <Radio className="w-4 h-4 text-rose-500" />
-                <span>Start live transcript</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-outline flex items-center gap-2 border-rose-400 text-rose-600 animate-pulse"
-                onClick={stopListening}
-                title="Stop listening"
-              >
-                <MicOff className="w-4 h-4" />
-                <span>Stop listening</span>
-              </button>
+                {listenErr}
+              </motion.div>
             )}
 
-            <span className="text-xs text-slate-500">or paste a transcript below</span>
-          </div>
-
-          {/* Interim live caption */}
-          {(listening || interimText) && (
-            <div className="mb-2 flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-              <Mic className="w-3.5 h-3.5 shrink-0 animate-pulse" />
-              <span className="italic">{interimText || "Listening…"}</span>
-            </div>
-          )}
-
-          {listenErr && (
-            <div className="mb-2 rounded bg-amber-50 px-3 py-2 text-sm text-amber-700">{listenErr}</div>
-          )}
-
-          <label className="label">Transcript</label>
-          <textarea
-            className="input mt-1 h-40 font-mono text-sm"
-            placeholder="Paste encounter transcript here…"
-            value={transcript}
-            onChange={(e) => setTranscript(e.target.value)}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="label">Chief complaint</label>
-              <input className="input mt-1" value={chiefComplaint} onChange={(e) => setChiefComplaint(e.target.value)} />
-            </div>
-            <div>
-              <label className="label">Follow-up</label>
-              <input className="input mt-1" value={followup} onChange={(e) => setFollowup(e.target.value)} placeholder="e.g., 6 weeks" />
-            </div>
-            <div className="grid grid-cols-3 gap-2 md:col-span-2">
+            <div className="space-y-6">
               <div>
-                <label className="label">BP</label>
-                <input className="input mt-1" value={bp} onChange={(e) => setBp(e.target.value)} placeholder="128/78" />
+                <label className="label text-slate-900 dark:text-slate-200 font-bold mb-1.5 ml-1">Transcript</label>
+                <textarea
+                  className="input mt-1 h-48 font-mono text-sm bg-white/50 dark:bg-slate-950/30 focus:ring-brand-500/20 transition-all"
+                  placeholder="Paste encounter transcript here…"
+                  value={transcript}
+                  onChange={(e) => setTranscript(e.target.value)}
+                />
               </div>
-              <div>
-                <label className="label">HR</label>
-                <input className="input mt-1" value={hr} onChange={(e) => setHr(e.target.value)} />
-              </div>
-              <div>
-                <label className="label">SpO2</label>
-                <input className="input mt-1" value={spo2} onChange={(e) => setSpo2(e.target.value)} />
-              </div>
-            </div>
-            <div>
-              <label className="label">Diagnoses (one per line)</label>
-              <textarea className="input mt-1 h-20 text-sm" value={dxRaw} onChange={(e) => setDxRaw(e.target.value)} />
-            </div>
-            <div>
-              <label className="label">Medications (one per line)</label>
-              <textarea className="input mt-1 h-20 text-sm" value={medsRaw} onChange={(e) => setMedsRaw(e.target.value)} />
-            </div>
-            <div>
-              <label className="label">Care plan changes</label>
-              <textarea className="input mt-1 h-20 text-sm" value={careRaw} onChange={(e) => setCareRaw(e.target.value)} />
-            </div>
-            <div>
-              <label className="label">Referrals</label>
-              <textarea className="input mt-1 h-20 text-sm" value={referralsRaw} onChange={(e) => setReferralsRaw(e.target.value)} />
-            </div>
-            <div className="md:col-span-2">
-              <label className="label">Orders</label>
-              <textarea className="input mt-1 h-20 text-sm" value={ordersRaw} onChange={(e) => setOrdersRaw(e.target.value)} />
-            </div>
-          </div>
 
-          {err && <div className="mt-4 p-3 rounded bg-rose-50 text-rose-700 text-sm">{err}</div>}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="label text-slate-900 dark:text-slate-200 font-bold mb-1.5 ml-1">Chief complaint</label>
+                    <input className="input" value={chiefComplaint} onChange={(e) => setChiefComplaint(e.target.value)} placeholder="e.g., Lower back pain" />
+                  </div>
+                  <div>
+                    <label className="label text-slate-900 dark:text-slate-200 font-bold mb-1.5 ml-1">Follow-up</label>
+                    <input className="input" value={followup} onChange={(e) => setFollowup(e.target.value)} placeholder="e.g., 6 weeks" />
+                  </div>
+                  <div>
+                    <label className="label text-slate-900 dark:text-slate-200 font-bold mb-1.5 ml-1">Vitals</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <input className="input text-center" value={bp} onChange={(e) => setBp(e.target.value)} placeholder="BP" />
+                      <input className="input text-center" value={hr} onChange={(e) => setHr(e.target.value)} placeholder="HR" />
+                      <input className="input text-center" value={spo2} onChange={(e) => setSpo2(e.target.value)} placeholder="SpO2" />
+                    </div>
+                  </div>
+                </div>
 
-          <div className="mt-5 flex justify-end">
-            <button
-              className="btn btn-primary"
-              disabled={busy || !transcript.trim()}
-              onClick={runCustom}
-              title={!transcript.trim() ? "Enter a transcript before running" : undefined}
-            >
-              <Play className="w-4 h-4" /> Run agents
-            </button>
-          </div>
-        </section>
+                <div className="space-y-4">
+                  <div>
+                    <label className="label text-slate-900 dark:text-slate-200 font-bold mb-1.5 ml-1">Diagnoses</label>
+                    <textarea className="input h-20 text-sm" value={dxRaw} onChange={(e) => setDxRaw(e.target.value)} placeholder="One per line..." />
+                  </div>
+                  <div>
+                    <label className="label text-slate-900 dark:text-slate-200 font-bold mb-1.5 ml-1">Medications</label>
+                    <textarea className="input h-20 text-sm" value={medsRaw} onChange={(e) => setMedsRaw(e.target.value)} placeholder="One per line..." />
+                  </div>
+                </div>
+
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="label text-slate-900 dark:text-slate-200 font-bold mb-1.5 ml-1 text-xs">Care plan changes</label>
+                    <textarea className="input h-20 text-sm" value={careRaw} onChange={(e) => setCareRaw(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="label text-slate-900 dark:text-slate-200 font-bold mb-1.5 ml-1 text-xs">Referrals</label>
+                    <textarea className="input h-20 text-sm" value={referralsRaw} onChange={(e) => setReferralsRaw(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="label text-slate-900 dark:text-slate-200 font-bold mb-1.5 ml-1 text-xs">Orders</label>
+                    <textarea className="input h-20 text-sm" value={ordersRaw} onChange={(e) => setOrdersRaw(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
+              {err && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 text-sm border border-rose-100 dark:border-rose-900/30"
+                >
+                  {err}
+                </motion.div>
+              )}
+
+              <div className="pt-4 flex justify-end">
+                <button
+                  className="btn btn-primary btn-lg px-8 shadow-brand group"
+                  disabled={busy || !transcript.trim()}
+                  onClick={runCustom}
+                >
+                  <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span>Run agents</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
+
