@@ -16,7 +16,7 @@ export default function EvidencePopover({ items }: { items: EvidenceSpan[] }) {
         <Info className="w-3 h-3 mr-1" /> {items.length} evidence
       </button>
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-[min(24rem,calc(100vw-2rem))] card p-3 text-sm shadow-pop">
+        <div className="absolute right-0 z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] card p-3 text-sm shadow-pop">
           <div className="font-semibold mb-2 text-slate-700">Supporting evidence</div>
           <ul className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {items.map((e, i) => (

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { api } from "../lib/api";
 import type { ArtifactOut, EncounterDetail } from "../lib/types";
 import ConfidenceBadge from "../components/ConfidenceBadge";
 import EvidencePopover from "../components/EvidencePopover";
+import SignoffModal from "../components/SignoffModal";
 import { CheckCircle2, Save, AlertTriangle, ClipboardList, Stethoscope, UserRound, ScrollText } from "lucide-react";
 
 const listAnim = {
@@ -64,11 +65,13 @@ const TABS: { key: ArtifactOut["kind"]; label: string; icon: any }[] = [
 
 export default function DraftReview() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [data, setData] = useState<EncounterDetail | null>(null);
   const [active, setActive] = useState<ArtifactOut["kind"]>("note");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [signoffModal, setSignoffModal] = useState<{ open: boolean; mode: "comment" | "blocked" }>({ open: false, mode: "comment" });
 
   useEffect(() => {
     if (!toast) return;
@@ -108,25 +111,28 @@ export default function DraftReview() {
     }
   }
 
-  async function doSignoff(override = false) {
+  function requestSignoff() {
+    setSignoffModal({ open: true, mode: "comment" });
+  }
+
+  async function executeSignoff(comment: string, override: boolean) {
     if (!current) return;
-    const comment = prompt("Sign-off comment (optional):") || "";
+    setSignoffModal({ open: false, mode: "comment" });
     setBusy(true);
     setErr(null);
     try {
       const res: any = await api.signoffArtifact(current.id, comment, override);
       await load();
-      setToast(
-        res?.encounter_signed
-          ? "Encounter fully signed off"
-          : `${TABS.find((t) => t.key === active)?.label || "Artifact"} signed off`
-      );
+      if (res?.encounter_signed) {
+        setToast("Encounter fully signed! Redirecting…");
+        setTimeout(() => navigate("/intake"), 1800);
+      } else {
+        setToast(`${TABS.find((t) => t.key === active)?.label || "Artifact"} signed`);
+      }
     } catch (e: any) {
       const msg = String(e.message || e);
       if (msg.includes("blocked") && !override) {
-        if (confirm("Signoff blocked by open gaps. Override with comment?")) {
-          await doSignoff(true);
-        }
+        setSignoffModal({ open: true, mode: "blocked" });
       } else {
         setErr(msg);
       }
@@ -141,6 +147,12 @@ export default function DraftReview() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 relative">
+      {data.encounter.status === "signed" && (
+        <div className="lg:col-span-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700/50 text-emerald-800 dark:text-emerald-300">
+          <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+          <span className="text-sm font-medium">All artifacts signed — encounter complete</span>
+        </div>
+      )}
       {toast && (
         <div
           role="status"
@@ -169,7 +181,7 @@ export default function DraftReview() {
           >
             status: {data.encounter.status}
           </span>
-          {current?.latest_version?.requires_human_review && (
+          {current?.latest_version?.requires_human_review && !current?.signed && (
             <div className="mt-2 text-xs bg-amber-50 border border-amber-200 rounded p-2 text-amber-800">
               Guardrail flagged this draft for human review.
             </div>
@@ -209,7 +221,7 @@ export default function DraftReview() {
               </div>
               <div className="flex items-center gap-2">
                 {!current.signed && (
-                  <button className="btn btn-primary" disabled={busy} onClick={() => doSignoff(false)}>
+                  <button className="btn btn-primary" disabled={busy} onClick={requestSignoff}>
                     <CheckCircle2 className="w-4 h-4" /> Sign off
                   </button>
                 )}
@@ -230,6 +242,14 @@ export default function DraftReview() {
           </>
         )}
       </section>
+
+      <SignoffModal
+        open={signoffModal.open}
+        mode={signoffModal.mode}
+        blockerCount={openBlockers}
+        onConfirm={(comment) => executeSignoff(comment, signoffModal.mode === "blocked")}
+        onCancel={() => setSignoffModal({ open: false, mode: "comment" })}
+      />
     </div>
   );
 }

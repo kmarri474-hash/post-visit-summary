@@ -79,7 +79,7 @@ function EncounterRow({ e }: { e: EncounterListItem }) {
             </div>
           )}
         </div>
-        <span className={`badge ${badgeClass}`}>{fullySigned ? "signed off" : e.status}</span>
+        <span className={`badge ${badgeClass}`}>{fullySigned ? "signed" : e.status}</span>
       </div>
     </Link>
   );
@@ -170,7 +170,7 @@ export default function EncounterIntake() {
 
       ws.onopen = () => setListening(true);
       ws.onerror = () => {
-        setListenErr("WebSocket connection failed");
+        setListenErr("WebSocket connection failed. If you are on a VPN, it may be blocking WebSockets.");
         stopListening();
       };
       ws.onclose = () => {
@@ -180,11 +180,17 @@ export default function EncounterIntake() {
 
       recognizerRef.current = { ws, stream, ctx, src, proc };
     } catch (e: any) {
-      setListenErr(
-        e?.message?.includes("not configured")
-          ? "Azure Speech is not configured on the server."
-          : `Live transcription unavailable: ${e.message || e}`,
-      );
+      let msg = e.message || String(e);
+      if (msg.includes("503") || msg.includes("not configured")) {
+        msg = "Azure Speech is not configured on the server. Add AZURE_SPEECH_* vars to your .env.";
+      } else if (msg.includes("Permission denied") || msg.includes("NotAllowedError")) {
+        msg = "Microphone access denied. Please check your browser permissions.";
+      } else if (msg.includes("WebSocket") || msg.includes("connection")) {
+        msg = "Connection failed. If you are on a VPN, it may be blocking WebSockets.";
+      } else {
+        msg = `Live transcription unavailable: ${msg}`;
+      }
+      setListenErr(msg);
     }
   }
 
@@ -443,7 +449,7 @@ export default function EncounterIntake() {
               <span className="logo-mark w-8 h-8 bg-gradient-to-br from-emerald-500 to-brand-500">
                 <CheckCircle2 className="w-4 h-4" />
               </span>
-              Signed off
+              Signed
             </h2>
             <span className="badge badge-soft">{signedOff.length}</span>
           </div>
@@ -455,7 +461,7 @@ export default function EncounterIntake() {
               <EncounterRow key={e.id} e={e} />
             ))}
             {signedOff.length === 0 && (
-              <div className="text-sm text-slate-500">No encounters signed off yet.</div>
+              <div className="text-sm text-slate-500">No encounters signed yet.</div>
             )}
           </div>
         </section>
@@ -577,7 +583,12 @@ export default function EncounterIntake() {
           {err && <div className="mt-4 p-3 rounded bg-rose-50 text-rose-700 text-sm">{err}</div>}
 
           <div className="mt-5 flex justify-end">
-            <button className="btn btn-primary" disabled={busy} onClick={runCustom}>
+            <button
+              className="btn btn-primary"
+              disabled={busy || !transcript.trim()}
+              onClick={runCustom}
+              title={!transcript.trim() ? "Enter a transcript before running" : undefined}
+            >
               <Play className="w-4 h-4" /> Run agents
             </button>
           </div>
