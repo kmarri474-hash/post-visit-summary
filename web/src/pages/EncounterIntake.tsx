@@ -113,17 +113,31 @@ export default function EncounterIntake() {
     setListenErr(null);
     setInterimText("");
     try {
-      const { token, region, endpoint } = await api.getSpeechToken();
+      const { token, region, endpoint, authType } = await api.getSpeechToken();
 
       // Dynamically import the Azure Speech JS SDK (loaded from npm)
       const sdk = await import("microsoft-cognitiveservices-speech-sdk");
 
       let speechConfig: any;
-      if (endpoint) {
-        speechConfig = sdk.SpeechConfig.fromEndpoint(new URL(endpoint));
-        speechConfig.authorizationToken = token;
+      if (authType === "key") {
+        // Subscription key auth — use fromEndpoint or fromSubscription
+        if (endpoint) {
+          speechConfig = sdk.SpeechConfig.fromEndpoint(new URL(endpoint), token);
+        } else if (region) {
+          speechConfig = sdk.SpeechConfig.fromSubscription(token, region);
+        } else {
+          throw new Error("Speech token response missing both endpoint and region");
+        }
       } else {
-        speechConfig = sdk.SpeechConfig.fromAuthorizationToken(token, region!);
+        // Authorization token (AAD) — use fromEndpoint or fromAuthorizationToken
+        if (endpoint) {
+          speechConfig = sdk.SpeechConfig.fromEndpoint(new URL(endpoint));
+          speechConfig.authorizationToken = token;
+        } else if (region) {
+          speechConfig = sdk.SpeechConfig.fromAuthorizationToken(token, region);
+        } else {
+          throw new Error("Speech token response missing both endpoint and region");
+        }
       }
       speechConfig.speechRecognitionLanguage = "en-US";
 

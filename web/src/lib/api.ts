@@ -56,5 +56,5 @@ export const api = {
   },
 
   getSpeechToken: () =>
-    request<{ token: string; region: string | null; endpoint: string | null }>("/api/speech/token"),
+    request<{ token: string; region: string | null; endpoint: string | null; authType: string }>("/api/speech/token"),
 };

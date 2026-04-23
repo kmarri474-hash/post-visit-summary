@@ -56,7 +56,18 @@ def _get_raw_access_token() -> tuple[str, object]:
 
 
 def get_speech_token_for_browser() -> dict:
-    """Short-lived token payload for the browser Speech JS SDK."""
+    """Credential payload for the browser Speech JS SDK.
+
+    For key-based auth:
+      When the Speech resource has a VNet/firewall the /sts/v1.0/issueToken
+      endpoint is disabled, so we must hand the subscription key directly to
+      the browser SDK (which will use it in the ``Ocp-Apim-Subscription-Key``
+      header over TLS).
+
+    For AAD-based auth:
+      We obtain an access token via client-credentials and return it as an
+      ``aad#`` composite token.
+    """
     s = _require_speech_settings()
 
     if s.azure_speech_key:
