@@ -59,14 +59,12 @@ export default function App() {
               >
                 <span className="relative block w-4 h-4">
                   <Sun
-                    className={`absolute inset-0 w-4 h-4 transition-all duration-300 ${
-                      theme === "dark" ? "opacity-0 rotate-90" : "opacity-100 rotate-0"
-                    }`}
+                    className={`absolute inset-0 w-4 h-4 transition-all duration-300 ${theme === "dark" ? "opacity-0 rotate-90" : "opacity-100 rotate-0"
+                      }`}
                   />
                   <Moon
-                    className={`absolute inset-0 w-4 h-4 transition-all duration-300 ${
-                      theme === "dark" ? "opacity-100 rotate-0" : "opacity-0 -rotate-90"
-                    }`}
+                    className={`absolute inset-0 w-4 h-4 transition-all duration-300 ${theme === "dark" ? "opacity-100 rotate-0" : "opacity-0 -rotate-90"
+                      }`}
                   />
                 </span>
               </button>
@@ -74,7 +72,7 @@ export default function App() {
           </div>
         </div>
       </header>
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+      <main className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-6 py-8">
         <div key={loc.pathname} className="route-enter">
           <Outlet />
         </div>
