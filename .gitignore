@@ -31,6 +31,7 @@ scripts/screenshots/package-lock.json
 # Local-only Azure deploy artifacts (passwords, parameter values)
 infra/.pg_password.local
 infra/*.parameters.local.json
+infra/*.parameters.deploy.json
 infra/*.tfstate*
 
 # Editor / IDE scratch
