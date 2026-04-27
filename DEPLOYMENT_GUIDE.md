@@ -429,46 +429,38 @@ az network private-dns record-set a add-record \
 
 ### 10a. Create the Speech Service
 
+> **UHG Policy Constraint**: The `az cognitiveservices account create` CLI command does **not** support setting `publicNetworkAccess: Disabled` or `networkAcls.defaultAction: Deny` at creation time. UHG policy `PCG-51003` ("AI Services should restrict overly permissive public network access") will **deny** any Cognitive Services resource created without these properties. You **must** use the ARM REST API directly.
+
 ```bash
-az cognitiveservices account create \
-  --resource-group "$RG" \
-  --name "$SPEECH_NAME" \
-  --kind SpeechServices \
-  --sku S0 \
-  --location "$LOCATION" \
-  --custom-domain "$SPEECH_NAME" \
-  --yes \
-  -o none
+# Use az rest to create with restricted network access in a single atomic operation
+az rest --method PUT \
+  --url "https://management.azure.com/subscriptions/${SUB_ID}/resourceGroups/${RG}/providers/Microsoft.CognitiveServices/accounts/${SPEECH_NAME}?api-version=2023-10-01-preview" \
+  --body "{
+    \"location\": \"${LOCATION}\",
+    \"kind\": \"SpeechServices\",
+    \"sku\": {\"name\": \"S0\"},
+    \"properties\": {
+      \"customSubDomainName\": \"${SPEECH_NAME}\",
+      \"publicNetworkAccess\": \"Disabled\",
+      \"networkAcls\": {\"defaultAction\": \"Deny\"}
+    }
+  }" \
+  --query 'properties.provisioningState' -o tsv
 ```
 
-> **Important**: The `--custom-domain` flag creates a custom subdomain (e.g., `speech-pvs-demo.cognitiveservices.azure.com`). This is **required** for private endpoint support but disables the token-issuing endpoint when combined with a firewall.
+> **Why not `az cognitiveservices account create`?** The CLI creates the resource first with `publicNetworkAccess: Enabled` and `defaultAction: Allow`, then applies updates. The initial creation triggers a policy deny before the update can run. The REST API sets all properties atomically in a single PUT.
 
-### 10b. Configure Network Restrictions
+> **Custom subdomain note**: The `customSubDomainName` creates a custom subdomain (e.g., `speech-pvs-demo.cognitiveservices.azure.com`). This is **required** for private endpoint support. If you get a `CustomDomainInUse` error, choose a unique name (e.g., append a random suffix).
+
+### 10b. Verify Network Restrictions
+
+Since the resource was created with `publicNetworkAccess: Disabled` and `networkAcls.defaultAction: Deny`, no additional network configuration is needed — all access must go through the private endpoint (Section 11).
 
 ```bash
-# Set default action to Deny (restrict public access)
-az cognitiveservices account update \
-  --resource-group "$RG" \
-  --name "$SPEECH_NAME" \
-  --custom-domain "$SPEECH_NAME" \
-  --api-properties "{'statisticsEnabled': false}" \
-  -o none
-
-az cognitiveservices account network-rule add \
-  --resource-group "$RG" \
-  --name "$SPEECH_NAME" \
-  --vnet-name "$VNET_NAME" \
-  --subnet snet-cae \
-  -o none
-
-# Add corporate proxy/Zscaler IP ranges for dev access (adjust as needed)
-for CIDR in "165.225.0.0/16" "168.183.0.0/16"; do
-  az cognitiveservices account network-rule add \
-    --resource-group "$RG" \
-    --name "$SPEECH_NAME" \
-    --ip-address "$CIDR" \
-    -o none
-done
+# Verify the Speech Service was created with correct network settings
+az cognitiveservices account show -g "$RG" -n "$SPEECH_NAME" \
+  --query '{publicAccess:properties.publicNetworkAccess, defaultAction:properties.networkAcls.defaultAction}' -o json
+# Expected: {"publicAccess": "Disabled", "defaultAction": "Deny"}
 ```
 
 ### 10c. Retrieve Speech Key and Endpoint
@@ -521,17 +513,25 @@ az network private-dns link vnet create \
   --virtual-network "$VNET_NAME" \
   --registration-enabled false \
   -o none
+```
 
-PE_SPEECH_IP=$(az network private-endpoint show \
+### 11c. Get Private Endpoint IP and Create DNS Record
+
+> **Lesson learned**: The `customDnsConfigs[0].ipAddresses[0]` JMESPath query can return empty for some PE types. Retrieve the IP from the NIC's `ipConfigurations` instead. Note the property name is `privateIPAddress` (camelCase with capital **A**), not `privateIpAddress`.
+
+```bash
+# Get the NIC resource ID from the private endpoint
+PE_NIC_ID=$(az network private-endpoint show \
   -g "$RG" -n "pe-speech-pvs" \
-  --query "customDnsConfigs[0].ipAddresses[0]" -o tsv)
+  --query 'networkInterfaces[0].id' -o tsv)
 
-az network private-dns record-set a create \
-  --resource-group "$RG" \
-  --zone-name "privatelink.cognitiveservices.azure.com" \
-  --name "$SPEECH_NAME" \
-  -o none
+# Get the private IP from the NIC (note: privateIPAddress, not privateIpAddress)
+PE_SPEECH_IP=$(az network nic show --ids "$PE_NIC_ID" \
+  --query 'ipConfigurations[0].privateIPAddress' -o tsv)
 
+echo "Speech PE IP: $PE_SPEECH_IP"  # e.g., 10.40.2.4
+
+# Create the DNS A record (add-record auto-creates the record set)
 az network private-dns record-set a add-record \
   --resource-group "$RG" \
   --zone-name "privatelink.cognitiveservices.azure.com" \
@@ -950,13 +950,15 @@ az network application-gateway rule create \
 
 ## 17. TLS / HTTPS Configuration
 
-HTTPS is **required** for browser microphone access (`navigator.mediaDevices`). For production, use a real domain and certificate. For demos, a self-signed certificate works.
+HTTPS is **required** for browser microphone access (`navigator.mediaDevices`). Without HTTPS, the browser will block the "Live Transcript" feature entirely. For production, use a real domain and certificate. For demos, a self-signed certificate works (users must accept the browser warning).
 
 ### 17a. Generate a Self-Signed Certificate (Demo)
 
+> **Shell warning**: Do **not** use `!` in the certificate password — zsh interprets `!` inside double quotes as history expansion, which causes the terminal to hang in `dquote>` state. Use alphanumeric passwords only.
+
 ```bash
 CERT_DOMAIN="${PUBLIC_IP//./-}.nip.io"   # e.g., 52-176-18-179.nip.io
-CERT_PASS="YourCertPassword123!"
+CERT_PASS="YourCertPassword123"          # No special chars like ! (breaks zsh)
 
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout /tmp/pvs.key \
@@ -977,6 +979,8 @@ Obtain a TLS certificate for your domain (e.g., via Let's Encrypt, DigiCert, or 
 
 ### 17c. Upload Certificate and Create HTTPS Listener
 
+> **Lesson learned**: The `--frontend-ip` value must match the actual frontend IP configuration name on your AppGW. Run `az network application-gateway frontend-ip list --gateway-name $APPGW_NAME -g $RG --query '[].name' -o tsv` to find it — it's usually `appGatewayFrontendIP` (not `appGwPublicFrontendIp`).
+
 ```bash
 # Upload the certificate
 az network application-gateway ssl-cert create \
@@ -995,6 +999,10 @@ az network application-gateway frontend-port create \
   --port 443 \
   -o none
 
+# Find the actual frontend IP config name (usually appGatewayFrontendIP)
+FRONTEND_IP=$(az network application-gateway frontend-ip list \
+  --gateway-name "$APPGW_NAME" -g "$RG" --query '[0].name' -o tsv)
+
 # Create HTTPS listener
 az network application-gateway http-listener create \
   --resource-group "$RG" \
@@ -1002,15 +1010,19 @@ az network application-gateway http-listener create \
   --name httpsListener \
   --frontend-port httpsPort \
   --ssl-cert pvs-ssl-cert \
-  --frontend-ip appGatewayFrontendIP \
+  --frontend-ip "$FRONTEND_IP" \
   -o none
 
-# Create URL path map for HTTPS (same rules as HTTP)
+# Create URL path map for HTTPS
+# IMPORTANT: Use --default-address-pool and --default-http-settings
+# (not --default-backend-pool / --default-backend-http-settings — those don't exist)
+# IMPORTANT: The API path rule must use apiHttpSettings (with the correct backend hostname),
+# not appGatewayBackendHttpSettings (which routes to the frontend)
 az network application-gateway url-path-map create \
   --resource-group "$RG" \
   --gateway-name "$APPGW_NAME" \
   --name urlPathMapHttps \
-  --default-backend-pool appGatewayBackendPool \
+  --default-address-pool appGatewayBackendPool \
   --default-http-settings appGatewayBackendHttpSettings \
   --paths "/api/*" \
   --address-pool apiBackendPool \
@@ -1019,6 +1031,7 @@ az network application-gateway url-path-map create \
   -o none
 
 # Create HTTPS routing rule
+# Note: --address-pool and --http-settings are required when multiple backend pools exist
 az network application-gateway rule create \
   --resource-group "$RG" \
   --gateway-name "$APPGW_NAME" \
@@ -1031,6 +1044,8 @@ az network application-gateway rule create \
   --priority 200 \
   -o none
 ```
+
+> **If `/api/*` returns the frontend HTML over HTTPS**: The URL path map's API rule is using the wrong HTTP settings. The `apiHttpSettings` routes to `pvs-api.<cae-domain>`, while `appGatewayBackendHttpSettings` routes to `pvs-web.<cae-domain>`. Delete and recreate the URL path map with `--http-settings apiHttpSettings` for the API rule.
 
 ---
 
@@ -1215,6 +1230,14 @@ az containerapp update -n pvs-web -g "$RG" --image "${ACR_LOGIN_SERVER}/pvs-web:
 | Zscaler blocks `curl` to public IP | Corporate proxy intercepts HTTP to bare IPs | Test from non-corporate network; use HTTPS with a real domain |
 | `RequestDisallowedByPolicy` on KV | UHG policy blocks `defaultAction: Allow` | Use direct env vars instead of KV secret refs (see §12 warning) |
 | No seeded data after deploy | App couldn't connect to DB on first start | Fix DB access (firewall rules), then restart the container app; auto-seed runs on startup |
+| `RequestDisallowedByPolicy` on Speech | UHG policy requires `publicNetworkAccess: Disabled` at creation time | Use `az rest --method PUT` instead of `az cognitiveservices account create` (see §10a) |
+| `CustomDomainInUse` on Speech | Custom subdomain was used by a deleted resource | Choose a different name (e.g., append random suffix); deleted resources block the name for 48 hours |
+| `The content for this response was already consumed` | az CLI bug with ARM deployment streaming (often Zscaler-related) | Use `az rest --method PUT` instead of `az deployment group create` |
+| PE IP query returns empty | JMESPath `customDnsConfigs[0].ipAddresses[0]` empty for some PE types | Use NIC query: `az network nic show --ids <nic-id> --query 'ipConfigurations[0].privateIPAddress'` (see §11c) |
+| `/api/*` returns frontend HTML over HTTPS | HTTPS URL path map uses wrong HTTP settings (`appGatewayBackendHttpSettings` instead of `apiHttpSettings`) | Delete and recreate URL path map with `--http-settings apiHttpSettings` for the API rule (see §17c) |
+| `dquote>` prompt stuck in terminal | Password or string contains `!` inside double quotes (zsh history expansion) | Avoid `!` in passwords/strings; use alphanumeric only in shell commands |
+| `--default-backend-pool` unrecognized | Wrong CLI parameter name for `url-path-map create` | Use `--default-address-pool` and `--default-http-settings` instead |
+| `Multiple backend address pools found` | AppGW rule create requires explicit pool when multiple exist | Add `--address-pool` and `--http-settings` to the `rule create` command |
 
 ---
 
@@ -1288,9 +1311,11 @@ PE_PG_IP=$(az network private-endpoint show -g "$RG" -n pe-pg --query "customDns
 az network private-dns record-set a create -g "$RG" -z privatelink.postgres.database.azure.com -n "$PG_SERVER" -o none
 az network private-dns record-set a add-record -g "$RG" -z privatelink.postgres.database.azure.com -n "$PG_SERVER" -a "$PE_PG_IP" -o none
 
-echo "Step 7: Speech Service"
-az cognitiveservices account create -g "$RG" -n "$SPEECH_NAME" --kind SpeechServices --sku S0 -l "$LOCATION" --custom-domain "$SPEECH_NAME" --yes -o none
-az cognitiveservices account network-rule add -g "$RG" -n "$SPEECH_NAME" --vnet-name "$VNET_NAME" --subnet snet-cae -o none
+echo "Step 7: Speech Service (using REST API for UHG policy compliance)"
+az rest --method PUT \
+  --url "https://management.azure.com/subscriptions/${SUB_ID}/resourceGroups/${RG}/providers/Microsoft.CognitiveServices/accounts/${SPEECH_NAME}?api-version=2023-10-01-preview" \
+  --body "{\"location\":\"${LOCATION}\",\"kind\":\"SpeechServices\",\"sku\":{\"name\":\"S0\"},\"properties\":{\"customSubDomainName\":\"${SPEECH_NAME}\",\"publicNetworkAccess\":\"Disabled\",\"networkAcls\":{\"defaultAction\":\"Deny\"}}}" \
+  --query 'properties.provisioningState' -o tsv
 SPEECH_KEY=$(az cognitiveservices account keys list -g "$RG" -n "$SPEECH_NAME" --query key1 -o tsv)
 SPEECH_ENDPOINT=$(az cognitiveservices account show -g "$RG" -n "$SPEECH_NAME" --query properties.endpoint -o tsv)
 
@@ -1299,8 +1324,8 @@ SPEECH_RID=$(az cognitiveservices account show -g "$RG" -n "$SPEECH_NAME" --quer
 az network private-endpoint create -g "$RG" -n pe-speech --vnet-name "$VNET_NAME" --subnet snet-pe --private-connection-resource-id "$SPEECH_RID" --group-id account --connection-name speech-conn -l "$LOCATION" -o none
 az network private-dns zone create -g "$RG" -n privatelink.cognitiveservices.azure.com -o none
 az network private-dns link vnet create -g "$RG" --zone-name privatelink.cognitiveservices.azure.com -n speech-link --virtual-network "$VNET_NAME" --registration-enabled false -o none
-PE_SP_IP=$(az network private-endpoint show -g "$RG" -n pe-speech --query "customDnsConfigs[0].ipAddresses[0]" -o tsv)
-az network private-dns record-set a create -g "$RG" -z privatelink.cognitiveservices.azure.com -n "$SPEECH_NAME" -o none
+PE_SP_NIC=$(az network private-endpoint show -g "$RG" -n pe-speech --query 'networkInterfaces[0].id' -o tsv)
+PE_SP_IP=$(az network nic show --ids "$PE_SP_NIC" --query 'ipConfigurations[0].privateIPAddress' -o tsv)
 az network private-dns record-set a add-record -g "$RG" -z privatelink.cognitiveservices.azure.com -n "$SPEECH_NAME" -a "$PE_SP_IP" -o none
 
 echo "Step 9: Key Vault (RBAC mode, firewall deny-by-default)"
