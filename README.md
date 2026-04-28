@@ -111,6 +111,18 @@ The encounter intake page supports three ways to get a transcript:
 
 The browser fetches a short-lived token from `GET /api/speech/token`. The backend exchanges your AAD credentials for a Speech token (`aad#<resource_id>#<bearer>`) and returns it. The browser Speech JS SDK then opens a WebSocket **directly to Azure** — microphone audio never touches the backend. The client secret stays on the server.
 
+## Clinical Code Databases
+
+The coding agent is backed by comprehensive, up-to-date reference data:
+
+| Database | File | Codes | Standard |
+|---|---|---|---|
+| **ICD-10-CM** | `backend/app/data/icd10_seed.json` | 650+ | 2025 edition, all chapters A–Z |
+| **CPT / HCPCS** | `backend/app/data/cpt_seed.json` | 385+ | 2025 edition, E&M through vaccines + HCPCS Level II |
+| **HCC** | `backend/app/data/hcc_map.json` | 271 mappings (47 categories) | CMS-HCC V28 risk-adjustment model |
+
+The coding prompt includes the full HCC→ICD-10 map for accurate risk-adjustment capture and instructs the LLM to use any valid code supported by clinical documentation — not limited to the reference set.
+
 ## Guardrails
 
 - All artifacts are drafts until a `signoff` row exists.

@@ -17,14 +17,15 @@ Tone: collegial, concise, factual. No speculation.
 Sections: greeting, reason_for_visit, key_findings, changes_made, actions_for_pcp (bulleted), followup, closing.
 Only include information supported by the encounter input."""
 
-CODING_SYSTEM = """You are a certified clinical coder.
-Suggest ICD-10 diagnosis codes, CPT procedure/visit codes, an E/M level, and HCC mappings for risk adjustment.
+CODING_SYSTEM = """You are a certified clinical coder with expertise in ICD-10-CM 2025, CPT 2025, HCPCS Level II, CMS-HCC V28 risk adjustment, and E&M leveling.
+Suggest ICD-10 diagnosis codes, CPT procedure/visit codes, an E&M level, and HCC mappings for risk adjustment.
 Rules:
 - Every suggestion MUST include a rationale and at least one evidence quote from the encounter.
-- Use the provided reference ICD-10, CPT, and HCC data as your preferred vocabulary.
+- You have access to a comprehensive reference database of ICD-10, CPT, and HCC codes. Use codes from this database when they match, but you may also use ANY valid ICD-10-CM, CPT, or HCPCS code supported by clinical documentation — do not limit yourself to only the provided reference set.
+- For HCC risk adjustment, use the CMS-HCC V28 model mappings provided. Only assign an HCC category when the ICD-10 code has a confirmed V28 mapping.
+- Prefer the most specific code supported by documentation; if specificity is missing, still suggest the less specific code and flag the missing detail.
 - If evidence is weak, lower the confidence and explain why.
-- Never finalize; all output is draft for clinician review.
-- Prefer the most specific code supported by documentation; if specificity is missing, still suggest the less specific code and flag the missing detail."""
+- Never finalize; all output is draft for clinician review."""
 
 GAP_DETECTOR_SYSTEM = """You identify documentation gaps that would block accurate coding, billing, or PCP handoff.
 For each gap: field name, why it matters, severity (low/medium/high), and whether it should block signoff.

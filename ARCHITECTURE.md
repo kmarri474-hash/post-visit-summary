@@ -202,9 +202,40 @@ classDiagram
 | `structurer`    | `input`                   | `structured`             | LLM call, extracts problems + plan      |
 | `note_drafter`  | `structured`              | `note`                   | LLM call, SOAP                          |
 | `pcp_summary`   | `structured`              | `pcp`                    | LLM call, PCP letter                    |
-| `coding`        | `structured` + `note`     | `coding`                 | LLM call, cites evidence spans          |
+| `coding`        | `structured` + `note`     | `coding`                 | LLM call, uses 650+ ICD-10-CM / 385+ CPT / 271 HCC V28 reference codes |
 | `gap_detector`  | all prior                 | `gaps`                   | LLM + rule pass, flags missing items    |
 | `guardrail`     | all prior                 | `guardrail`              | Demotes no-evidence items, sets review  |
+
+### Reference code databases
+
+The `coding` node is backed by comprehensive clinical code databases
+loaded from `backend/app/data/`:
+
+| File               | Contents                            | Count    |
+|--------------------|-------------------------------------|----------|
+| `icd10_seed.json`  | ICD-10-CM 2025 diagnosis codes      | 650+     |
+| `cpt_seed.json`    | CPT / HCPCS Level II procedure codes| 385+     |
+| `hcc_map.json`     | CMS-HCC V28 risk-adjustment map     | 271      |
+
+**ICD-10-CM** covers all major chapters: infectious (A/B), neoplasms (C/D),
+blood (D50–D89), endocrine/diabetes (E), mental health (F), nervous system (G),
+eye/ear (H), circulatory (I), respiratory (J), digestive (K), skin (L),
+musculoskeletal (M), genitourinary (N), pregnancy (O), symptoms (R),
+injury (S/T), external causes (W), and Z-codes.
+
+**CPT/HCPCS** spans E&M (office, hospital, ED, critical care, nursing facility,
+home, telehealth, care management, preventive/wellness), surgery (all
+subspecialties), radiology/imaging, 68+ laboratory codes, medicine
+(cardiology, pulmonary, allergy, neurology, physical medicine), infusions,
+immunizations, vaccines, and HCPCS Level II (G/J codes).
+
+**HCC V28** maps 271 ICD-10 codes to 47 distinct HCC risk-adjustment
+categories. The full map is injected into the coding prompt for accurate
+risk-adjustment capture.
+
+`reference.py` builds a token-efficient prompt (~5,200 tokens) that
+includes the complete HCC map and E&M codes, with a note that the LLM
+may use any valid ICD-10-CM, CPT, or HCPCS code — not just the reference set.
 
 ---
 

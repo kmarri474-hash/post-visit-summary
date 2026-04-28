@@ -1,11 +1,1086 @@
 {
-  "E11.22": {"hcc": "HCC 18", "description": "Diabetes with chronic complications"},
-  "E11.65": {"hcc": "HCC 18", "description": "Diabetes with chronic complications"},
-  "E11.9":  {"hcc": "HCC 19", "description": "Diabetes without complication"},
-  "I50.22": {"hcc": "HCC 85", "description": "Congestive heart failure"},
-  "I50.32": {"hcc": "HCC 85", "description": "Congestive heart failure"},
-  "I50.9":  {"hcc": "HCC 85", "description": "Congestive heart failure"},
-  "J44.1":  {"hcc": "HCC 111", "description": "Chronic obstructive pulmonary disease"},
-  "N18.3":  {"hcc": "HCC 138", "description": "Chronic kidney disease, moderate (stage 3)"},
-  "F32.9":  {"hcc": "HCC 59", "description": "Major depressive, bipolar, and paranoid disorders"}
+  "A15.0": {
+    "hcc": "HCC 7",
+    "description": "Tuberculosis, chronic hepatitis"
+  },
+  "A41.01": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "A41.02": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "A41.2": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "A41.50": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "A41.51": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "A41.52": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "A41.53": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "A41.59": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "A41.81": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "A41.89": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "A41.9": {
+    "hcc": "HCC 2",
+    "description": "Septicemia, sepsis, systemic inflammatory response syndrome/shock"
+  },
+  "B18.1": {
+    "hcc": "HCC 7",
+    "description": "Tuberculosis, chronic hepatitis"
+  },
+  "B18.2": {
+    "hcc": "HCC 7",
+    "description": "Tuberculosis, chronic hepatitis"
+  },
+  "B20": {
+    "hcc": "HCC 1",
+    "description": "HIV/AIDS"
+  },
+  "C18.0": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C18.2": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C18.7": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C18.9": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C20": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C22.0": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C22.9": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C25.0": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C25.9": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C34.10": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C34.11": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C34.12": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C34.30": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C34.90": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C43.4": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C43.59": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C43.9": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C50.011": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C50.111": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C50.411": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C50.911": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C50.912": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C50.919": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C56.1": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C56.2": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C56.9": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C61": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C64.1": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C64.9": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C67.9": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C71.1": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C71.9": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C73": {
+    "hcc": "HCC 12",
+    "description": "Breast, prostate, colorectal and other cancers and tumors"
+  },
+  "C77.9": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C78.00": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C78.7": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C79.31": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C79.51": {
+    "hcc": "HCC 11",
+    "description": "Lung, brain, and other severe cancers"
+  },
+  "C81.90": {
+    "hcc": "HCC 10",
+    "description": "Chronic leukemias, lymphomas, myelodysplastic syndromes, myelofibrosis, multiple myeloma"
+  },
+  "C83.30": {
+    "hcc": "HCC 10",
+    "description": "Chronic leukemias, lymphomas, myelodysplastic syndromes, myelofibrosis, multiple myeloma"
+  },
+  "C85.90": {
+    "hcc": "HCC 10",
+    "description": "Chronic leukemias, lymphomas, myelodysplastic syndromes, myelofibrosis, multiple myeloma"
+  },
+  "C90.00": {
+    "hcc": "HCC 10",
+    "description": "Chronic leukemias, lymphomas, myelodysplastic syndromes, myelofibrosis, multiple myeloma"
+  },
+  "C90.01": {
+    "hcc": "HCC 10",
+    "description": "Chronic leukemias, lymphomas, myelodysplastic syndromes, myelofibrosis, multiple myeloma"
+  },
+  "C91.00": {
+    "hcc": "HCC 9",
+    "description": "Acute leukemias and aggressive lymphomas"
+  },
+  "C91.10": {
+    "hcc": "HCC 10",
+    "description": "Chronic leukemias, lymphomas, myelodysplastic syndromes, myelofibrosis, multiple myeloma"
+  },
+  "C92.00": {
+    "hcc": "HCC 9",
+    "description": "Acute leukemias and aggressive lymphomas"
+  },
+  "C92.10": {
+    "hcc": "HCC 10",
+    "description": "Chronic leukemias, lymphomas, myelodysplastic syndromes, myelofibrosis, multiple myeloma"
+  },
+  "D68.2": {
+    "hcc": "HCC 75",
+    "description": "Coagulation defects and other specified hematological disorders"
+  },
+  "E10.10": {
+    "hcc": "HCC 17",
+    "description": "Diabetes with acute complications"
+  },
+  "E10.11": {
+    "hcc": "HCC 17",
+    "description": "Diabetes with acute complications"
+  },
+  "E10.21": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.22": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.29": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.311": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.319": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.321": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.329": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.331": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.339": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.40": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.42": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.44": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.51": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.52": {
+    "hcc": "HCC 17",
+    "description": "Diabetes with acute complications"
+  },
+  "E10.59": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.610": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.618": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.620": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.621": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.622": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.628": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.630": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.638": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.641": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.649": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.65": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.69": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.8": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E10.9": {
+    "hcc": "HCC 19",
+    "description": "Diabetes without complication"
+  },
+  "E11.00": {
+    "hcc": "HCC 17",
+    "description": "Diabetes with acute complications"
+  },
+  "E11.01": {
+    "hcc": "HCC 17",
+    "description": "Diabetes with acute complications"
+  },
+  "E11.10": {
+    "hcc": "HCC 17",
+    "description": "Diabetes with acute complications"
+  },
+  "E11.21": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.22": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.29": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.311": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.319": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.321": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.329": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.331": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.339": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.40": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.42": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.44": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.51": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.52": {
+    "hcc": "HCC 17",
+    "description": "Diabetes with acute complications"
+  },
+  "E11.59": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.610": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.618": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.620": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.621": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.622": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.628": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.630": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.638": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.641": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.649": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.65": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.69": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.8": {
+    "hcc": "HCC 18",
+    "description": "Diabetes with chronic complications"
+  },
+  "E11.9": {
+    "hcc": "HCC 19",
+    "description": "Diabetes without complication"
+  },
+  "E27.1": {
+    "hcc": "HCC 23",
+    "description": "Adrenal, pituitary, and other significant endocrine disorders"
+  },
+  "E27.40": {
+    "hcc": "HCC 23",
+    "description": "Adrenal, pituitary, and other significant endocrine disorders"
+  },
+  "F01.50": {
+    "hcc": "HCC 51",
+    "description": "Dementia with or without complications"
+  },
+  "F02.80": {
+    "hcc": "HCC 51",
+    "description": "Dementia with or without complications"
+  },
+  "F03.90": {
+    "hcc": "HCC 51",
+    "description": "Dementia with or without complications"
+  },
+  "F10.10": {
+    "hcc": "HCC 55",
+    "description": "Substance use disorder, moderate/severe, or substance use with complications"
+  },
+  "F10.20": {
+    "hcc": "HCC 55",
+    "description": "Substance use disorder, moderate/severe, or substance use with complications"
+  },
+  "F10.21": {
+    "hcc": "HCC 55",
+    "description": "Substance use disorder, moderate/severe, or substance use with complications"
+  },
+  "F10.239": {
+    "hcc": "HCC 55",
+    "description": "Substance use disorder, moderate/severe, or substance use with complications"
+  },
+  "F11.10": {
+    "hcc": "HCC 56",
+    "description": "Substance use disorder, mild, uncomplicated except alcohol and cannabis"
+  },
+  "F11.20": {
+    "hcc": "HCC 56",
+    "description": "Substance use disorder, mild, uncomplicated except alcohol and cannabis"
+  },
+  "F11.21": {
+    "hcc": "HCC 56",
+    "description": "Substance use disorder, mild, uncomplicated except alcohol and cannabis"
+  },
+  "F12.10": {
+    "hcc": "HCC 56",
+    "description": "Substance use disorder, mild, uncomplicated except alcohol and cannabis"
+  },
+  "F12.20": {
+    "hcc": "HCC 56",
+    "description": "Substance use disorder, mild, uncomplicated except alcohol and cannabis"
+  },
+  "F13.10": {
+    "hcc": "HCC 56",
+    "description": "Substance use disorder, mild, uncomplicated except alcohol and cannabis"
+  },
+  "F13.20": {
+    "hcc": "HCC 56",
+    "description": "Substance use disorder, mild, uncomplicated except alcohol and cannabis"
+  },
+  "F14.10": {
+    "hcc": "HCC 56",
+    "description": "Substance use disorder, mild, uncomplicated except alcohol and cannabis"
+  },
+  "F14.20": {
+    "hcc": "HCC 56",
+    "description": "Substance use disorder, mild, uncomplicated except alcohol and cannabis"
+  },
+  "F20.0": {
+    "hcc": "HCC 57",
+    "description": "Schizophrenia"
+  },
+  "F20.9": {
+    "hcc": "HCC 57",
+    "description": "Schizophrenia"
+  },
+  "F31.0": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F31.10": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F31.30": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F31.9": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F32.0": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F32.1": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F32.2": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F32.3": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F32.4": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F32.5": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F32.9": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F33.0": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F33.1": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F33.2": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F33.3": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F33.9": {
+    "hcc": "HCC 59",
+    "description": "Major depressive, bipolar, and paranoid disorders"
+  },
+  "F84.0": {
+    "hcc": "HCC 58",
+    "description": "Reactive and unspecified psychosis, delusional disorders"
+  },
+  "G20.A1": {
+    "hcc": "HCC 78",
+    "description": "Parkinson and Huntington diseases"
+  },
+  "G20.C": {
+    "hcc": "HCC 78",
+    "description": "Parkinson and Huntington diseases"
+  },
+  "G30.0": {
+    "hcc": "HCC 51",
+    "description": "Dementia with or without complications"
+  },
+  "G30.1": {
+    "hcc": "HCC 51",
+    "description": "Dementia with or without complications"
+  },
+  "G30.9": {
+    "hcc": "HCC 51",
+    "description": "Dementia with or without complications"
+  },
+  "G35": {
+    "hcc": "HCC 77",
+    "description": "Multiple sclerosis"
+  },
+  "G40.309": {
+    "hcc": "HCC 79",
+    "description": "Seizure disorders and convulsions"
+  },
+  "G40.901": {
+    "hcc": "HCC 79",
+    "description": "Seizure disorders and convulsions"
+  },
+  "G40.909": {
+    "hcc": "HCC 79",
+    "description": "Seizure disorders and convulsions"
+  },
+  "I11.0": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I12.0": {
+    "hcc": "HCC 136",
+    "description": "Chronic kidney disease, stage 5 / ESRD"
+  },
+  "I13.0": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I13.2": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I21.01": {
+    "hcc": "HCC 86",
+    "description": "Acute myocardial infarction"
+  },
+  "I21.09": {
+    "hcc": "HCC 86",
+    "description": "Acute myocardial infarction"
+  },
+  "I21.11": {
+    "hcc": "HCC 86",
+    "description": "Acute myocardial infarction"
+  },
+  "I21.19": {
+    "hcc": "HCC 86",
+    "description": "Acute myocardial infarction"
+  },
+  "I21.21": {
+    "hcc": "HCC 86",
+    "description": "Acute myocardial infarction"
+  },
+  "I21.4": {
+    "hcc": "HCC 86",
+    "description": "Acute myocardial infarction"
+  },
+  "I21.9": {
+    "hcc": "HCC 86",
+    "description": "Acute myocardial infarction"
+  },
+  "I25.10": {
+    "hcc": "HCC 88",
+    "description": "Angina pectoris and old myocardial infarction"
+  },
+  "I25.110": {
+    "hcc": "HCC 87",
+    "description": "Unstable angina and other acute ischemic heart disease"
+  },
+  "I25.111": {
+    "hcc": "HCC 88",
+    "description": "Angina pectoris and old myocardial infarction"
+  },
+  "I25.119": {
+    "hcc": "HCC 88",
+    "description": "Angina pectoris and old myocardial infarction"
+  },
+  "I25.5": {
+    "hcc": "HCC 88",
+    "description": "Angina pectoris and old myocardial infarction"
+  },
+  "I25.700": {
+    "hcc": "HCC 87",
+    "description": "Unstable angina and other acute ischemic heart disease"
+  },
+  "I25.710": {
+    "hcc": "HCC 87",
+    "description": "Unstable angina and other acute ischemic heart disease"
+  },
+  "I33.0": {
+    "hcc": "HCC 3",
+    "description": "Central nervous system infections, endocarditis"
+  },
+  "I42.0": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I42.9": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I47.20": {
+    "hcc": "HCC 96",
+    "description": "Specified heart arrhythmias"
+  },
+  "I48.0": {
+    "hcc": "HCC 96",
+    "description": "Specified heart arrhythmias"
+  },
+  "I48.1": {
+    "hcc": "HCC 96",
+    "description": "Specified heart arrhythmias"
+  },
+  "I48.11": {
+    "hcc": "HCC 96",
+    "description": "Specified heart arrhythmias"
+  },
+  "I48.19": {
+    "hcc": "HCC 96",
+    "description": "Specified heart arrhythmias"
+  },
+  "I48.20": {
+    "hcc": "HCC 96",
+    "description": "Specified heart arrhythmias"
+  },
+  "I48.21": {
+    "hcc": "HCC 96",
+    "description": "Specified heart arrhythmias"
+  },
+  "I48.91": {
+    "hcc": "HCC 96",
+    "description": "Specified heart arrhythmias"
+  },
+  "I48.92": {
+    "hcc": "HCC 96",
+    "description": "Specified heart arrhythmias"
+  },
+  "I50.1": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.20": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.21": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.22": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.23": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.30": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.31": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.32": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.33": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.40": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.41": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.42": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.43": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.810": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I50.9": {
+    "hcc": "HCC 85",
+    "description": "Congestive heart failure"
+  },
+  "I63.30": {
+    "hcc": "HCC 100",
+    "description": "Ischemic or unspecified stroke"
+  },
+  "I63.50": {
+    "hcc": "HCC 100",
+    "description": "Ischemic or unspecified stroke"
+  },
+  "I63.9": {
+    "hcc": "HCC 100",
+    "description": "Ischemic or unspecified stroke"
+  },
+  "I70.201": {
+    "hcc": "HCC 108",
+    "description": "Vascular disease with complications"
+  },
+  "I70.209": {
+    "hcc": "HCC 108",
+    "description": "Vascular disease with complications"
+  },
+  "I70.211": {
+    "hcc": "HCC 108",
+    "description": "Vascular disease with complications"
+  },
+  "I70.219": {
+    "hcc": "HCC 108",
+    "description": "Vascular disease with complications"
+  },
+  "I70.25": {
+    "hcc": "HCC 106",
+    "description": "Atherosclerosis of arteries of the extremities with ulceration or gangrene"
+  },
+  "J44.0": {
+    "hcc": "HCC 111",
+    "description": "Chronic obstructive pulmonary disease"
+  },
+  "J44.1": {
+    "hcc": "HCC 111",
+    "description": "Chronic obstructive pulmonary disease"
+  },
+  "J44.9": {
+    "hcc": "HCC 111",
+    "description": "Chronic obstructive pulmonary disease"
+  },
+  "J84.10": {
+    "hcc": "HCC 112",
+    "description": "Fibrosis of lung and other chronic lung disorders"
+  },
+  "J84.112": {
+    "hcc": "HCC 112",
+    "description": "Fibrosis of lung and other chronic lung disorders"
+  },
+  "J96.00": {
+    "hcc": "HCC 83",
+    "description": "Respiratory arrest, respiratory failure"
+  },
+  "J96.01": {
+    "hcc": "HCC 83",
+    "description": "Respiratory arrest, respiratory failure"
+  },
+  "J96.10": {
+    "hcc": "HCC 83",
+    "description": "Respiratory arrest, respiratory failure"
+  },
+  "J96.11": {
+    "hcc": "HCC 83",
+    "description": "Respiratory arrest, respiratory failure"
+  },
+  "J96.20": {
+    "hcc": "HCC 83",
+    "description": "Respiratory arrest, respiratory failure"
+  },
+  "K50.00": {
+    "hcc": "HCC 35",
+    "description": "Inflammatory bowel disease"
+  },
+  "K50.10": {
+    "hcc": "HCC 35",
+    "description": "Inflammatory bowel disease"
+  },
+  "K50.90": {
+    "hcc": "HCC 35",
+    "description": "Inflammatory bowel disease"
+  },
+  "K51.00": {
+    "hcc": "HCC 35",
+    "description": "Inflammatory bowel disease"
+  },
+  "K51.90": {
+    "hcc": "HCC 35",
+    "description": "Inflammatory bowel disease"
+  },
+  "K70.30": {
+    "hcc": "HCC 27",
+    "description": "End-stage liver disease"
+  },
+  "K74.60": {
+    "hcc": "HCC 27",
+    "description": "End-stage liver disease"
+  },
+  "K74.69": {
+    "hcc": "HCC 27",
+    "description": "End-stage liver disease"
+  },
+  "K85.90": {
+    "hcc": "HCC 34",
+    "description": "Chronic pancreatitis"
+  },
+  "K86.1": {
+    "hcc": "HCC 34",
+    "description": "Chronic pancreatitis"
+  },
+  "L89.000": {
+    "hcc": "HCC 157",
+    "description": "Pressure ulcer of skin with necrosis through to muscle, tendon, or bone"
+  },
+  "L89.100": {
+    "hcc": "HCC 157",
+    "description": "Pressure ulcer of skin with necrosis through to muscle, tendon, or bone"
+  },
+  "L89.152": {
+    "hcc": "HCC 161",
+    "description": "Pressure ulcer of skin with partial thickness skin loss"
+  },
+  "L89.153": {
+    "hcc": "HCC 158",
+    "description": "Pressure ulcer of skin with full thickness skin loss"
+  },
+  "L89.154": {
+    "hcc": "HCC 157",
+    "description": "Pressure ulcer of skin with necrosis through to muscle, tendon, or bone"
+  },
+  "L89.90": {
+    "hcc": "HCC 157",
+    "description": "Pressure ulcer of skin with necrosis through to muscle, tendon, or bone"
+  },
+  "M05.79": {
+    "hcc": "HCC 40",
+    "description": "Rheumatoid arthritis and specified autoimmune disorders"
+  },
+  "M06.09": {
+    "hcc": "HCC 40",
+    "description": "Rheumatoid arthritis and specified autoimmune disorders"
+  },
+  "M06.9": {
+    "hcc": "HCC 40",
+    "description": "Rheumatoid arthritis and specified autoimmune disorders"
+  },
+  "M80.00XA": {
+    "hcc": "HCC 170",
+    "description": "Hip fracture/dislocation, major head/vertebral/pathological fractures"
+  },
+  "N17.0": {
+    "hcc": "HCC 135",
+    "description": "Acute renal failure"
+  },
+  "N17.9": {
+    "hcc": "HCC 135",
+    "description": "Acute renal failure"
+  },
+  "N18.30": {
+    "hcc": "HCC 138",
+    "description": "Chronic kidney disease, moderate (stage 3)"
+  },
+  "N18.31": {
+    "hcc": "HCC 138",
+    "description": "Chronic kidney disease, moderate (stage 3)"
+  },
+  "N18.32": {
+    "hcc": "HCC 138",
+    "description": "Chronic kidney disease, moderate (stage 3)"
+  },
+  "N18.4": {
+    "hcc": "HCC 137",
+    "description": "Chronic kidney disease, severe (stage 4)"
+  },
+  "N18.5": {
+    "hcc": "HCC 136",
+    "description": "Chronic kidney disease, stage 5 / ESRD"
+  },
+  "N18.6": {
+    "hcc": "HCC 136",
+    "description": "Chronic kidney disease, stage 5 / ESRD"
+  },
+  "N18.9": {
+    "hcc": "HCC 140",
+    "description": "Chronic kidney disease, unspecified"
+  },
+  "S42.001A": {
+    "hcc": "HCC 170",
+    "description": "Hip fracture/dislocation, major head/vertebral/pathological fractures"
+  },
+  "S52.501A": {
+    "hcc": "HCC 170",
+    "description": "Hip fracture/dislocation, major head/vertebral/pathological fractures"
+  },
+  "S72.001A": {
+    "hcc": "HCC 170",
+    "description": "Hip fracture/dislocation, major head/vertebral/pathological fractures"
+  },
+  "S72.009A": {
+    "hcc": "HCC 170",
+    "description": "Hip fracture/dislocation, major head/vertebral/pathological fractures"
+  },
+  "S82.001A": {
+    "hcc": "HCC 170",
+    "description": "Hip fracture/dislocation, major head/vertebral/pathological fractures"
+  },
+  "S82.891A": {
+    "hcc": "HCC 170",
+    "description": "Hip fracture/dislocation, major head/vertebral/pathological fractures"
+  },
+  "Z59.00": {
+    "hcc": "HCC 197",
+    "description": "Homelessness"
+  }
 }
