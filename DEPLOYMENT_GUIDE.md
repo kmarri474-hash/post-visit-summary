@@ -23,11 +23,12 @@ This guide walks through every step required to deploy the Post-Visit Summary ap
 15. [Build & Deploy — Frontend (pvs-web)](#15-build--deploy--frontend-pvs-web)
 16. [Application Gateway](#16-application-gateway)
 17. [TLS / HTTPS Configuration](#17-tls--https-configuration)
-18. [Database Initialization & Seeding](#18-database-initialization--seeding)
-19. [DNS Configuration (Optional Custom Domain)](#19-dns-configuration-optional-custom-domain)
-20. [Validation Checklist](#20-validation-checklist)
-21. [Environment Variables Reference](#21-environment-variables-reference)
-22. [Operational Notes](#22-operational-notes)
+18. [Trusted TLS with Let's Encrypt](#18-trusted-tls-with-lets-encrypt)
+19. [Database Initialization & Seeding](#19-database-initialization--seeding)
+20. [DNS Configuration (Optional Custom Domain)](#20-dns-configuration-optional-custom-domain)
+21. [Validation Checklist](#21-validation-checklist)
+22. [Environment Variables Reference](#22-environment-variables-reference)
+23. [Operational Notes](#23-operational-notes)
 
 ---
 
@@ -973,9 +974,11 @@ openssl pkcs12 -export \
   -password "pass:${CERT_PASS}"
 ```
 
-### 17b. For Production: Use a Real Certificate
+### 17b. For Production: Use a Trusted Certificate
 
-Obtain a TLS certificate for your domain (e.g., via Let's Encrypt, DigiCert, or your organization's CA). Export it as a `.pfx` file.
+For a browser-trusted URL with no security warnings, use Let's Encrypt (free, automated). See **§18 — Trusted TLS with Let's Encrypt** for the full procedure.
+
+Alternatively, obtain a cert from DigiCert or your organization's CA and export it as `.pfx`.
 
 ### 17c. Upload Certificate and Create HTTPS Listener
 
@@ -1049,7 +1052,292 @@ az network application-gateway rule create \
 
 ---
 
-## 18. Database Initialization & Seeding
+## 18. Trusted TLS with Let's Encrypt
+
+This section replaces the self-signed certificate from §17a with a **free, browser-trusted** Let's Encrypt certificate. After completing these steps, users will not see any "untrusted website" warnings.
+
+> **Why this approach?** Corporate environments (Zscaler, etc.) block certbot from running locally because HTTPS interception breaks the ACME client's TLS to `acme-v02.api.letsencrypt.org`. Running certbot inside a **Container Apps Job** bypasses this — Container Apps have direct internet access without proxy interference.
+
+### 18a. Add Temporary ACME Endpoints to the Backend
+
+Let's Encrypt validates domain ownership by requesting a token at `http://<domain>/.well-known/acme-challenge/<token>`. We add temporary endpoints to the backend to serve these challenge responses.
+
+Add the following to `backend/app/main.py` (after the router includes, before the `/api/health` endpoint):
+
+```python
+import os as _os
+from fastapi.requests import Request as _Request
+
+_acme_challenges: dict[str, str] = {}
+_acme_certs: dict[str, str] = {}
+
+@app.get("/.well-known/acme-challenge/{token}")
+async def acme_challenge(token: str):
+    from fastapi.responses import PlainTextResponse
+    from fastapi import HTTPException
+    if token in _acme_challenges:
+        return PlainTextResponse(_acme_challenges[token])
+    raise HTTPException(404, "Challenge not found")
+
+@app.get("/api/acme/set")
+async def set_acme_challenge(token: str, response: str):
+    from fastapi.responses import PlainTextResponse
+    _acme_challenges[token] = response
+    return PlainTextResponse(f"Set challenge for {token}")
+
+@app.post("/api/acme/cert")
+async def store_acme_cert(request: _Request):
+    from fastapi.responses import PlainTextResponse
+    body = await request.body()
+    cert_type = request.headers.get("x-cert-type", "unknown")
+    _acme_certs[cert_type] = body.decode("utf-8")
+    return PlainTextResponse(f"Stored {cert_type} ({len(body)} bytes)")
+
+@app.get("/api/acme/cert/{cert_type}")
+async def get_acme_cert(cert_type: str):
+    from fastapi.responses import PlainTextResponse
+    from fastapi import HTTPException
+    if cert_type not in _acme_certs:
+        raise HTTPException(404, f"No cert data for {cert_type}")
+    return PlainTextResponse(_acme_certs[cert_type])
+```
+
+Build and deploy:
+
+```bash
+az acr build --registry "$ACR_NAME" --image "pvs-api:acme" \
+  --file backend/Dockerfile backend/ \
+  --build-arg "CACHE_BUST=$(date +%s)" -o none
+
+az containerapp update -g "$RG" -n pvs-api \
+  --image "${ACR_NAME}.azurecr.io/pvs-api:acme"
+```
+
+### 18b. Add ACME Path Rules to Application Gateway
+
+The ACME challenge path must be routed to the API backend on **both** HTTP and HTTPS URL path maps:
+
+```bash
+# HTTP path map
+az network application-gateway url-path-map rule create \
+  --gateway-name "$APPGW_NAME" -g "$RG" \
+  --path-map-name urlPathMap \
+  -n acmeRule \
+  --paths "/.well-known/acme-challenge/*" \
+  --address-pool apiBackendPool \
+  --http-settings apiHttpSettings \
+  -o none
+
+# HTTPS path map
+az network application-gateway url-path-map rule create \
+  --gateway-name "$APPGW_NAME" -g "$RG" \
+  --path-map-name urlPathMapHttps \
+  -n acmeRuleHttps \
+  --paths "/.well-known/acme-challenge/*" \
+  --address-pool apiBackendPool \
+  --http-settings apiHttpSettings \
+  -o none
+```
+
+Verify the endpoints work:
+
+```bash
+curl -sk "https://${CERT_DOMAIN}/api/acme/set?token=test&response=test123"
+# Expected: Set challenge for test
+
+curl -sk "https://${CERT_DOMAIN}/.well-known/acme-challenge/test"
+# Expected: test123
+```
+
+### 18c. Build the Certbot Runner Image
+
+Create three files in a temp directory:
+
+**Dockerfile:**
+```dockerfile
+FROM certbot/certbot:latest
+RUN apk add --no-cache curl
+COPY auth-hook.sh /usr/local/bin/auth-hook.sh
+RUN chmod +x /usr/local/bin/auth-hook.sh
+COPY run.sh /usr/local/bin/run.sh
+RUN chmod +x /usr/local/bin/run.sh
+ENTRYPOINT ["/bin/sh", "/usr/local/bin/run.sh"]
+```
+
+**auth-hook.sh** (called by certbot with `$CERTBOT_TOKEN` and `$CERTBOT_VALIDATION`):
+```bash
+#!/bin/sh
+curl -s "http://${CERT_DOMAIN}/api/acme/set?token=${CERTBOT_TOKEN}&response=${CERTBOT_VALIDATION}"
+echo "Set challenge: token=${CERTBOT_TOKEN}"
+sleep 2
+```
+
+> **Important**: The auth hook must use `http://` (not `https://`). Let's Encrypt validates over HTTP port 80.
+
+**run.sh:**
+```bash
+#!/bin/sh
+set -e
+DOMAIN="<your-domain>"   # e.g., 20-12-213-16.nip.io
+EMAIL="<your-email>"
+
+echo "=== Starting certbot for ${DOMAIN} ==="
+curl -v "http://${DOMAIN}/api/health" 2>&1 || echo "HTTP connectivity check"
+
+certbot certonly \
+  --manual \
+  --preferred-challenges http \
+  --manual-auth-hook /usr/local/bin/auth-hook.sh \
+  --agree-tos \
+  --email "${EMAIL}" \
+  -d "${DOMAIN}" \
+  --no-eff-email \
+  --non-interactive \
+  --force-renewal
+
+echo "=== Certificate obtained ==="
+curl -s -X POST "http://${DOMAIN}/api/acme/cert" \
+  -H "x-cert-type: fullchain" \
+  --data-binary "@/etc/letsencrypt/live/${DOMAIN}/fullchain.pem"
+
+curl -s -X POST "http://${DOMAIN}/api/acme/cert" \
+  -H "x-cert-type: privkey" \
+  --data-binary "@/etc/letsencrypt/live/${DOMAIN}/privkey.pem"
+
+echo "=== Certificates posted to backend ==="
+```
+
+Build in ACR:
+
+```bash
+az acr build --registry "$ACR_NAME" \
+  --image "certbot-runner:v1" \
+  --file /tmp/certbot-build/Dockerfile /tmp/certbot-build/ -o none
+```
+
+### 18d. Create and Run the Certbot Container Apps Job
+
+> **Why Container Apps Job instead of ACI?** UHG policy (`ContainerInstanceGroupsShouldDeployIntoVnet`) blocks standalone ACI. Container Apps Jobs run inside the existing CAE which already has VNet integration and internet access.
+
+```bash
+# Get ACR credentials
+ACR_USER=$(az acr credential show -n "$ACR_NAME" --query username -o tsv)
+ACR_PASS=$(az acr credential show -n "$ACR_NAME" --query "passwords[0].value" -o tsv)
+
+# Create the job
+az containerapp job create \
+  --resource-group "$RG" \
+  --name certbot-job \
+  --environment "$CAE_NAME" \
+  --image "${ACR_NAME}.azurecr.io/certbot-runner:v1" \
+  --trigger-type Manual \
+  --replica-timeout 600 \
+  --replica-retry-limit 0 \
+  --cpu 0.25 --memory 0.5Gi \
+  --registry-server "${ACR_NAME}.azurecr.io" \
+  --registry-username "$ACR_USER" \
+  --registry-password "$ACR_PASS" \
+  --replica-completion-count 1 \
+  --parallelism 1
+
+# Start the job
+EXEC_NAME=$(az containerapp job start -g "$RG" -n certbot-job --query 'name' -o tsv)
+echo "Job execution: $EXEC_NAME"
+
+# Wait ~90 seconds, then check status
+sleep 90
+az containerapp job execution show -g "$RG" -n certbot-job \
+  --job-execution-name "$EXEC_NAME" --query 'properties.status' -o tsv
+# Expected: Succeeded
+```
+
+### 18e. Retrieve the Certificate and Upload to AppGW
+
+The certbot job POSTed the cert and key to the backend's in-memory store. Retrieve them:
+
+```bash
+# Download fullchain and private key
+curl -sk "https://${CERT_DOMAIN}/api/acme/cert/fullchain" > /tmp/le-fullchain.pem
+curl -sk "https://${CERT_DOMAIN}/api/acme/cert/privkey" > /tmp/le-privkey.pem
+
+# Verify the certificate
+openssl x509 -in /tmp/le-fullchain.pem -noout -subject -dates -issuer
+# Expected: subject=CN=<your-domain>, issuer=...Let's Encrypt...
+
+# Convert to PFX
+CERT_PASS="LeCert$(date +%Y)pvs"
+openssl pkcs12 -export -out /tmp/le-cert.pfx \
+  -inkey /tmp/le-privkey.pem \
+  -in /tmp/le-fullchain.pem \
+  -passout "pass:${CERT_PASS}"
+
+# Upload to Application Gateway
+az network application-gateway ssl-cert create \
+  --gateway-name "$APPGW_NAME" -g "$RG" \
+  -n cert-le \
+  --cert-file /tmp/le-cert.pfx \
+  --cert-password "$CERT_PASS"
+
+# Switch the HTTPS listener to use the LE cert
+az network application-gateway http-listener update \
+  --gateway-name "$APPGW_NAME" -g "$RG" \
+  -n httpsListener \
+  --ssl-cert cert-le
+
+# Verify — this should succeed WITHOUT -k flag
+curl -v "https://${CERT_DOMAIN}/api/health" 2>&1 | grep 'SSL certificate verify'
+# Expected: SSL certificate verify ok.
+```
+
+### 18f. Clean Up ACME Resources
+
+After the certificate is installed, remove all temporary ACME infrastructure:
+
+```bash
+# 1. Remove ACME path rules from AppGW
+az network application-gateway url-path-map rule delete \
+  --gateway-name "$APPGW_NAME" -g "$RG" \
+  --path-map-name urlPathMap -n acmeRule -o none
+
+az network application-gateway url-path-map rule delete \
+  --gateway-name "$APPGW_NAME" -g "$RG" \
+  --path-map-name urlPathMapHttps -n acmeRuleHttps -o none
+
+# 2. Delete the certbot job
+az containerapp job delete -g "$RG" -n certbot-job -y -o none
+
+# 3. Remove the old self-signed cert (if present)
+az network application-gateway ssl-cert delete \
+  --gateway-name "$APPGW_NAME" -g "$RG" -n pvs-ssl-cert -o none 2>/dev/null || true
+
+# 4. Revert ACME code from backend/app/main.py
+#    Remove the ACME endpoint code added in §18a, then rebuild and deploy:
+az acr build --registry "$ACR_NAME" --image "pvs-api:clean" \
+  --file backend/Dockerfile backend/ \
+  --build-arg "CACHE_BUST=$(date +%s)" -o none
+az containerapp update -g "$RG" -n pvs-api \
+  --image "${ACR_NAME}.azurecr.io/pvs-api:clean"
+
+# 5. Clean up local temp files
+rm -f /tmp/le-fullchain.pem /tmp/le-privkey.pem /tmp/le-cert.pfx
+```
+
+### 18g. Certificate Renewal
+
+Let's Encrypt certificates are valid for **90 days**. To renew:
+
+1. Re-add the ACME code to `main.py` (§18a) and redeploy
+2. Re-add the ACME path rules (§18b)
+3. Rebuild the certbot image with `--force-renewal` (§18c)
+4. Re-create and run the certbot job (§18d)
+5. Download the new cert and update AppGW (§18e)
+6. Clean up (§18f)
+
+> **Tip**: Keep the certbot image in ACR (`certbot-runner:v1`) — you only need to rebuild it if the domain or email changes.
+
+---
+
+## 19. Database Initialization & Seeding
 
 The application automatically initializes the database on first startup:
 
@@ -1077,7 +1365,7 @@ scripts/db_snapshot.sh dump   # writes to backend/app/data/snapshot.json
 
 ---
 
-## 19. DNS Configuration (Optional Custom Domain)
+## 20. DNS Configuration (Optional Custom Domain)
 
 For production, you'll want a real domain instead of the bare IP or nip.io.
 
@@ -1094,7 +1382,7 @@ For production, you'll want a real domain instead of the bare IP or nip.io.
 
 ---
 
-## 20. Validation Checklist
+## 21. Validation Checklist
 
 Run these checks after deployment to verify everything works:
 
@@ -1111,11 +1399,17 @@ curl -s --max-time 180 -w "\nHTTP %{http_code}\n" \
   -X POST "http://${PUBLIC_IP}/api/transcribe" \
   -F "file=@test-data/audio/01_copd_exacerbation.m4a"
 
-# 4. HTTPS (if configured)
+# 4. HTTPS (if configured with self-signed cert)
 curl -sk -o /dev/null -w "HTTPS Frontend: %{http_code}\n" "https://${CERT_DOMAIN}/"
 curl -sk -w "\nHTTPS API: %{http_code}\n" "https://${CERT_DOMAIN}/api/health"
 
-# 5. Check container logs
+# 5. HTTPS trust verification (after Let's Encrypt cert — §18)
+#    This MUST work WITHOUT -k flag if using a trusted cert
+curl -s -o /dev/null -w "Trusted HTTPS: %{http_code}\n" "https://${CERT_DOMAIN}/"
+curl -v "https://${CERT_DOMAIN}/api/health" 2>&1 | grep 'SSL certificate verify'
+# Expected: SSL certificate verify ok.
+
+# 6. Check container logs
 az containerapp logs show -n pvs-api -g "$RG" --tail 50
 az containerapp logs show -n pvs-web -g "$RG" --tail 50
 
@@ -1125,7 +1419,7 @@ az containerapp logs show -n pvs-web -g "$RG" --tail 50
 
 ---
 
-## 21. Environment Variables Reference
+## 22. Environment Variables Reference
 
 ### pvs-api (Backend)
 
@@ -1161,7 +1455,7 @@ az containerapp logs show -n pvs-web -g "$RG" --tail 50
 
 ---
 
-## 22. Operational Notes
+## 23. Operational Notes
 
 ### Updating Environment Variables
 
@@ -1238,6 +1532,12 @@ az containerapp update -n pvs-web -g "$RG" --image "${ACR_LOGIN_SERVER}/pvs-web:
 | `dquote>` prompt stuck in terminal | Password or string contains `!` inside double quotes (zsh history expansion) | Avoid `!` in passwords/strings; use alphanumeric only in shell commands |
 | `--default-backend-pool` unrecognized | Wrong CLI parameter name for `url-path-map create` | Use `--default-address-pool` and `--default-http-settings` instead |
 | `Multiple backend address pools found` | AppGW rule create requires explicit pool when multiple exist | Add `--address-pool` and `--http-settings` to the `rule create` command |
+| Browser shows "untrusted website" | Self-signed cert on AppGW | Replace with Let's Encrypt cert (see §18) |
+| Certbot `SSL: CERTIFICATE_VERIFY_FAILED` locally | Zscaler/corporate proxy intercepts HTTPS to ACME server | Run certbot in a Container Apps Job instead (see §18d) |
+| `RequestDisallowedByPolicy` on ACI | UHG policy requires ACI in VNet | Use Container Apps Job instead of ACI (see §18d) |
+| Certbot job `Failed` | Deprecated flag `--manual-public-ip-logging-ok` | Remove that flag; it was removed in certbot v2+ |
+| ACR build produces same digest | Docker layer cache reused old code | Add `--build-arg "CACHE_BUST=$(date +%s)"` to force a fresh build |
+| Certbot job logs "No replicas found" | Replica already terminated | Use the in-memory cert store approach — POST certs to backend and retrieve via API (see §18e) |
 
 ---
 
@@ -1366,6 +1666,12 @@ echo "  DB URL:       $DATABASE_URL"
 echo "  CAE IP:       $CAE_STATIC_IP"
 echo "  CAE Domain:   $CAE_DOMAIN"
 echo "═══════════════════════════════════════════"
+echo ""
+echo "== NEXT STEPS (manual) =="
+echo "  1. Build & deploy pvs-api and pvs-web (Sections 14 & 15)"
+echo "  2. Configure TLS with self-signed cert (Section 17)"
+echo "  3. Replace with Let's Encrypt trusted cert (Section 18)"
+echo "     This makes the URL trusted by browsers — no security warnings."
 ```
 
 ---

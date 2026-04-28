@@ -77,7 +77,6 @@ app.include_router(artifacts.router)
 app.include_router(audit.router)
 app.include_router(transcribe.router)
 
-
 @app.get("/api/health")
 async def health() -> dict:
     return {"ok": True, "azure_configured": get_settings().azure_configured}
