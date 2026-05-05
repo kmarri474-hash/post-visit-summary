@@ -130,6 +130,50 @@ The coding prompt includes the full HCC→ICD-10 map for accurate risk-adjustmen
 - Items below the confidence floor (default 0.7) are surfaced under "Needs review".
 - Every LLM call, node transition, edit, and signoff is recorded in `audit_log`.
 
+## SSO (Microsoft Entra ID)
+
+The SPA authenticates users via HCP SSO (Microsoft Entra ID) using
+`@azure/msal-browser` + `@azure/msal-react` with Authorization Code + PKCE.
+All UI routes are gated behind `<RequireAuth>`; unauthenticated users are
+redirected to Microsoft's hosted login.
+
+- Config lives in `web/src/lib/auth/msalConfig.ts`, driven by `VITE_MSAL_*`
+  env vars (see `web/.env.example`).
+- Tokens are cached in `sessionStorage` (cleared when the tab closes).
+- The MSAL active account's UPN is sent to the backend as `X-User-Id`, so
+  audit-log entries are attributed to the real user.
+
+**Feature-flag bypass for local dev.** Set `VITE_SSO_ENABLED=false` in
+`web/.env` to disable SSO entirely — MSAL is never initialized, `/login` is
+skipped, and the app runs as an anonymous dev user. Header shows a yellow
+"SSO off (dev)" badge. Default is `true`; never deploy a build with this off.
+
+**Prerequisites** (one-time, in HCP SSO self-service):
+
+1. Register every redirect URI you intend to use, e.g. `http://localhost:5173/`
+   for dev and `https://stage-clinical.optum.com/` for stage. Trailing slash
+   matters.
+2. Link at least one `AZU`-prefixed Active Directory group to the client
+   registration. Users not in a linked group cannot log in.
+
+**Building per environment** (Vite inlines `VITE_*` at build time):
+
+```bash
+docker build -f web/Dockerfile.prod \
+  --build-arg VITE_API_BASE_URL=https://pvs-api.example.com \
+  --build-arg VITE_MSAL_REDIRECT_URI=https://stage-clinical.optum.com/ \
+  --build-arg VITE_MSAL_POST_LOGOUT_REDIRECT_URI=https://stage-clinical.optum.com/ \
+  -t pvs-web:stage web/
+```
+
+Backend token validation, group-claim enforcement, and `Authorization: Bearer`
+forwarding are intentionally out of scope for this phase.
+
+> **Reusable pattern doc:** the full integration recipe — bootstrap order,
+> reference code, routing, env vars, Docker build args, validation checklist,
+> and common errors — is captured in [`docs/SSO_INTEGRATION.md`](./docs/SSO_INTEGRATION.md).
+> Use it as the template when adding HCP SSO to other SPAs.
+
 ## Repo layout
 
 See `backend/` and `web/` — or the plan doc at `../.windsurf/plans/post-visit-summary-agent-814de5.md`.

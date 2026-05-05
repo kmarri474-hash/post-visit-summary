@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { Stethoscope, ShieldCheck, Sparkles, Sun, Moon } from "lucide-react";
 import { useTheme } from "./lib/theme";
 import { motion, AnimatePresence } from "framer-motion";
+import UserMenu from "./components/UserMenu";
 
 const nav = [
   { to: "/intake", label: "Encounters", icon: Stethoscope },
@@ -62,6 +63,7 @@ export default function App() {
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
 
             <div className="flex items-center gap-3">
+              <UserMenu />
               <button
                 type="button"
                 onClick={toggle}

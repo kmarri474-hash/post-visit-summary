@@ -33,6 +33,24 @@ COPY . .
 ARG VITE_API_BASE_URL=http://localhost:8000
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
+# SSO feature flag. Production builds MUST keep this "true". Override only
+# for ephemeral dev images that intentionally skip auth.
+ARG VITE_SSO_ENABLED=true
+ENV VITE_SSO_ENABLED=${VITE_SSO_ENABLED}
+
+# Microsoft Entra ID (SSO) build-time config. These are public values
+# (SPA is a public OIDC client using PKCE). Override via --build-arg per env.
+ARG VITE_MSAL_CLIENT_ID=2b65c52d-dcca-464b-ab0a-097a737f9eb6
+ARG VITE_MSAL_TENANT_ID=db05faca-c82a-4b9d-b9c5-0f64b6755421
+ARG VITE_MSAL_REDIRECT_URI=https://stage-clinical.optum.com/
+ARG VITE_MSAL_POST_LOGOUT_REDIRECT_URI=https://stage-clinical.optum.com/
+ARG VITE_MSAL_API_SCOPE=api://2b65c52d-dcca-464b-ab0a-097a737f9eb6/openid
+ENV VITE_MSAL_CLIENT_ID=${VITE_MSAL_CLIENT_ID} \
+    VITE_MSAL_TENANT_ID=${VITE_MSAL_TENANT_ID} \
+    VITE_MSAL_REDIRECT_URI=${VITE_MSAL_REDIRECT_URI} \
+    VITE_MSAL_POST_LOGOUT_REDIRECT_URI=${VITE_MSAL_POST_LOGOUT_REDIRECT_URI} \
+    VITE_MSAL_API_SCOPE=${VITE_MSAL_API_SCOPE}
+
 RUN npm run build
 
 # ---------- runtime ----------

@@ -1,7 +1,20 @@
+import { msalInstance, isSsoEnabled } from "./auth/msalConfig";
+
 export const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 const USER_ID_KEY = "pvs.userId";
 export function getUserId(): string {
+  // When SSO is enabled, prefer the AAD-authenticated identity so audit logs
+  // record the real UPN.
+  if (isSsoEnabled) {
+    const acct =
+      msalInstance.getActiveAccount() ?? msalInstance.getAllAccounts()[0];
+    if (acct?.username) return acct.username;
+  }
+
+  // Fallback path:
+  //  - SSO disabled (feature flag): persistent dev id
+  //  - SSO enabled but called before bootstrap finishes: defensive id
   let v = localStorage.getItem(USER_ID_KEY);
   if (!v) {
     v = "dr-" + Math.random().toString(36).slice(2, 8);
